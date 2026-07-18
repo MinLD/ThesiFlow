@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+**/dist/
+build/
+**/build/
+.next/
+**/.next/
+out/
+**/out/
+
+# Test/cache
+coverage/
+**/coverage/
+.cache/
+**/.cache/
+.turbo/
+**/.turbo/
+*.tsbuildinfo
+apps/web/tsconfig.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Generated
+apps/api/src/generated/
+
+# Local docs/source material
+docs/
+
+# Local runtime data
+.local/
+.tmp/
+uploads/
+postgres-data/
+*.db
+*.sqlite
+*.sqlite3
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker local overrides
+docker-compose.override.yml

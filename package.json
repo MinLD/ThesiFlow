@@ -1,0 +1,23 @@
+{
+  "name": "thesiflow",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspace apps/api",
+    "build": "npm run build --workspaces --if-present",
+    "db:validate": "npm run prisma:validate --workspace apps/api",
+    "db:migrate": "npm run prisma:migrate --workspace apps/api",
+    "db:seed": "npm run prisma:seed --workspace apps/api"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  }
+}

@@ -1,0 +1,9 @@
+process.env.NODE_ENV = "test";
+process.env.PORT = "4001";
+process.env.DATABASE_URL = "postgresql://thesiflow:thesiflow_dev_password@localhost:5432/thesiflow?schema=public";
+process.env.FRONTEND_URL = "http://localhost:3000";
+process.env.CORS_ORIGIN = "http://localhost:3000";
+process.env.JSON_BODY_LIMIT = "1mb";
+process.env.RATE_LIMIT_WINDOW_MS = "60000";
+process.env.RATE_LIMIT_MAX = "1000";
+process.env.LOG_LEVEL = "error";
