@@ -18,6 +18,7 @@ out/
 **/out/
 
 # Test/cache
+apps/api/tests/
 coverage/
 **/coverage/
 test-results/
