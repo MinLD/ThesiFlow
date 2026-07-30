@@ -39,4 +39,11 @@ npm run build
 ## Health
 
 - API: `http://localhost:4000/health`
+- Ready: `http://localhost:4000/ready`
+- Meta: `http://localhost:4000/api/v1/meta`
 - Web: `http://localhost:3000`
+
+## Worker
+
+- `apps/worker` polls `outbox_events` and marks claimed events published.
+- Current worker is Phase 1 plumbing only; real notification adapters come later.

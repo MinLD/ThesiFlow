@@ -7,3 +7,7 @@ process.env.JSON_BODY_LIMIT = "1mb";
 process.env.RATE_LIMIT_WINDOW_MS = "60000";
 process.env.RATE_LIMIT_MAX = "1000";
 process.env.LOG_LEVEL = "error";
+process.env.ACCESS_TOKEN_SECRET = "test-access-token-secret-min-32-chars";
+process.env.REFRESH_TOKEN_SECRET = "test-refresh-token-secret-min-32-chars";
+process.env.ADMIN_EMAIL = "admin@thesiflow.local";
+process.env.ADMIN_PASSWORD = "change-me-admin-password";

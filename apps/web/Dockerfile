@@ -1,12 +1,16 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
+COPY apps/api/package.json apps/api/package.json
+COPY apps/worker/package.json apps/worker/package.json
 COPY apps/web/package.json apps/web/package.json
 RUN npm ci --workspace apps/web --include-workspace-root
 
 FROM node:22-alpine AS prod-deps
 WORKDIR /app
 COPY package.json package-lock.json ./
+COPY apps/api/package.json apps/api/package.json
+COPY apps/worker/package.json apps/worker/package.json
 COPY apps/web/package.json apps/web/package.json
 RUN npm ci --omit=dev --workspace apps/web --include-workspace-root
 
