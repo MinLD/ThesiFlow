@@ -14,21 +14,21 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 
 ## Current Snapshot
 
-- Current Phase: Phase 1 — Foundation, monorepo, PostgreSQL, worker, outbox và test foundation
+- Current Phase: Phase 2 — Global account authentication
 - Current Phase Status: IN_PROGRESS
-- Current Task: P1-005 — Logging Redaction
-- Last Completed Task: P1-004 — Request Context and Error Envelope code draft completed in Markdown only
-- Next Exact Action: Write P1-005 `DRAFT_NOT_APPLIED` logging redaction code in `docs/phases/phase-1/PHASE_1_CODE.md`; do not edit runtime source until implementation mode is explicitly approved.
+- Current Task: P2-001 — Phase 2 authentication planning and code draft
+- Last Completed Task: Phase 1 — Foundation implemented and verified
+- Next Exact Action: Read `docs/phases/phase-2/PHASE_2_PLAN.md`, then write P2-001 `DRAFT_NOT_APPLIED` auth/account code in `docs/phases/phase-2/PHASE_2_CODE.md`; do not edit runtime source until implementation mode is explicitly approved.
 - Official Daily Status Source: `docs/ROADMAP.md`
-- Current Phase Plan: `docs/phases/phase-1/PHASE_1_PLAN.md`
-- Current Phase Code Drafts: `docs/phases/phase-1/PHASE_1_CODE.md`
-- Runtime Code Changed In Latest Session: NO
-- Test Executed In Latest Session: NO
+- Current Phase Plan: `docs/phases/phase-2/PHASE_2_PLAN.md`
+- Current Phase Code Drafts: `docs/phases/phase-2/PHASE_2_CODE.md`
+- Runtime Code Changed In Latest Session: YES — Phase 1 only
+- Test Executed In Latest Session: YES — `npm run phase1:check` PASS; `npm run build` PASS
 
 ## Source References
 
 - Source of truth: `docs/BaoCaoKhoaLuan.docx`, Chương 7.1 Roadmap tổng quát, Bảng Roadmap Phase 0-13.
-- Phase 0 approved references retained: `docs/phase-0/PHASE_0_SIGN_OFF.md`, `docs/phase-0/adr/`, `docs/phase-0/OPEN_DECISIONS.md`.
+- Phase 0 approved references retained: `docs/phases/phase-0/PHASE_0_SIGN_OFF.md`, `docs/phases/phase-0/adr/`, `docs/phases/phase-0/OPEN_DECISIONS.md`.
 - Phase 1 notes are tracked in `docs/phases/phase-1/PHASE_1_PLAN.md` and `docs/phases/phase-1/PHASE_1_CODE.md`; no separate Phase 1 evidence folder is used.
 
 ## Phase Roadmap
@@ -36,8 +36,8 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 | Phase | Tên | Mục tiêu chính | Nhóm chức năng chính | Điều kiện hoàn thành | Trạng thái |
 |---|---|---|---|---|---|
 | Phase 0 | Architecture reconciliation và scope freeze | Đóng băng bốn lớp phạm vi, thuật ngữ, invariant, module boundary, Database Capability Manifest và evidence plan | Scope, stack, module boundaries, ADR, risk, evidence, sign-off | Phase 0 sign-off recorded and approved | DONE |
-| Phase 1 | Foundation, monorepo, PostgreSQL, worker, outbox và test foundation | Dựng nền tảng chạy được và các primitive độ tin cậy trước domain | Workspace, config, PostgreSQL/Prisma, request ID, error envelope, logging/redaction, idempotency, outbox, worker, system config, health, test foundation | Foundation tests/evidence pass; no domain workflow added; runtime reconciliation complete | IN_PROGRESS |
-| Phase 2 | Global account authentication | Có account toàn cục và session an toàn, chưa gắn cứng tenant | Accounts, credentials, tokens, sessions, auth API/UI | Global auth works; no account tenant coupling; security tests pass | NOT_STARTED |
+| Phase 1 | Foundation, monorepo, PostgreSQL, worker, outbox và test foundation | Dựng nền tảng chạy được và các primitive độ tin cậy trước domain | Workspace, config, PostgreSQL/Prisma, request ID, error envelope, logging/redaction, idempotency, outbox, worker, system config, health, test foundation | `npm run phase1:check` PASS; `npm run build` PASS | DONE |
+| Phase 2 | Global account authentication | Có account toàn cục và session an toàn, chưa gắn cứng tenant | Accounts, credentials, tokens, sessions, auth API/UI | Global auth works; no account tenant coupling; security tests pass | IN_PROGRESS |
 | Phase 3 | Organization/Tenant onboarding | Tạo biên tổ chức và membership rõ nguồn | Organizations, tenant memberships, invitations, tenant context switch | Active membership context verified; tenant isolation baseline pass | NOT_STARTED |
 | Phase 4 | RBAC và resource authorization | Thiết lập deny-by-default theo tenant, role, scope, relationship và state | Permission catalog, roles, assignments, resource guards | Cross-tenant, IDOR and privilege escalation tests pass | NOT_STARTED |
 | Phase 5 | Academic organization và profile | Mô hình hóa cấu trúc trường/trung tâm và placement lịch sử | Academic units, student/lecturer profiles, placement history | Academic hierarchy/profile lifecycle verified | NOT_STARTED |
@@ -58,21 +58,21 @@ Khi Phase 1 hoàn thành: đặt Phase 1 = DONE, Phase 2 = IN_PROGRESS, tạo `d
 
 | File/Directory | Reason |
 |---|---|
-| `docs/phase-0/PHASE_0_SIGN_OFF.md` | Approved sign-off; must not be lost. |
-| `docs/phase-0/adr/` | Approved architectural decisions. |
-| `docs/phase-0/OPEN_DECISIONS.md` | Open decisions not yet transferred into runtime rules. |
-| `docs/phase-0/*.md` | Phase 0 reference/audit artifacts; not daily tracking. |
+| `docs/phases/phase-0/PHASE_0_SIGN_OFF.md` | Approved sign-off; must not be lost. |
+| `docs/phases/phase-0/adr/` | Approved architectural decisions. |
+| `docs/phases/phase-0/OPEN_DECISIONS.md` | Open decisions not yet transferred into runtime rules. |
+| `docs/phases/phase-0/*.md` | Phase 0 reference/audit artifacts; not daily tracking. |
 | `docs/PROJECT_STATUS.md` | Reduced pointer to this roadmap for compatibility only; not official status. |
 
 ## Latest Session Log
 
 - Time: 2026-07-30 Asia/Ho_Chi_Minh
 - Executor: Codex CLI
-- Work Performed: Created simplified roadmap/status source; moved daily tracking to `docs/ROADMAP.md`, Phase 1 plan to `docs/phases/phase-1/PHASE_1_PLAN.md`, and Phase 1 code drafts to `docs/phases/phase-1/PHASE_1_CODE.md`.
-- Runtime Code Changed: NO
+- Work Performed: Implemented and verified Phase 1 Foundation; created Phase 2 tracking files.
+- Runtime Code Changed: YES — Phase 1 only.
 - Files Deleted: `docs/MASTER_IMPLEMENTATION_ROADMAP.md`; obsolete Phase 1 evidence folder.
-- Task Completed: P1-004 — Request Context and Error Envelope code draft.
-- Current Task: P1-005 — Logging Redaction.
-- Runtime Applied: NO.
-- Test Executed: NO.
-- Next Exact Action: Write P1-005 `DRAFT_NOT_APPLIED` logging redaction code in `docs/phases/phase-1/PHASE_1_CODE.md`; do not edit runtime source until implementation mode is explicitly approved.
+- Task Completed: Phase 1 — Foundation implemented and verified.
+- Current Task: P2-001 — Phase 2 authentication planning and code draft.
+- Runtime Applied: YES — Phase 1 only.
+- Test Executed: YES — `npm run phase1:check` PASS; `npm run build` PASS.
+- Next Exact Action: Read `docs/phases/phase-2/PHASE_2_PLAN.md`, then write P2-001 `DRAFT_NOT_APPLIED` auth/account code in `docs/phases/phase-2/PHASE_2_CODE.md`; do not edit runtime source until implementation mode is explicitly approved.

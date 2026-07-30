@@ -5,6 +5,7 @@ export type ApiSuccessResponse<T> = {
   data: T;
   meta: {
     requestId: string;
+    correlationId: string;
     timestamp: string;
   };
 };

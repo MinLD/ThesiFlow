@@ -113,7 +113,8 @@ Khi toàn bộ task của Current Phase hoàn thành và verified:
 ## Current Baseline
 
 - Phase 0: DONE
-- Phase 1: IN_PROGRESS
-- Current Phase Plan: `docs/phases/phase-1/PHASE_1_PLAN.md`
-- Current Phase Code: `docs/phases/phase-1/PHASE_1_CODE.md`
+- Phase 1: DONE
+- Phase 2: IN_PROGRESS
+- Current Phase Plan: `docs/phases/phase-2/PHASE_2_PLAN.md`
+- Current Phase Code: `docs/phases/phase-2/PHASE_2_CODE.md`
 - Runtime source must not be edited in planning/draft sessions.

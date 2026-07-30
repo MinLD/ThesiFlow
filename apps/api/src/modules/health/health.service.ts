@@ -33,6 +33,7 @@ export function getMetaStatus(): MetaStatus {
     name: "ThesiFlow",
     version: env.APP_VERSION,
     architecture: "modular-monolith-first",
-    phase: "phase-1-foundation"
+    phase: "phase-1-foundation",
+    implementationStatus: "foundation-in-progress"
   };
 }

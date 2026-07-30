@@ -15,11 +15,11 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 ## Current Progress
 
 - Current Phase: Phase 1 — Foundation
-- Phase Status: IN_PROGRESS
-- Current Task: P1-005 — Logging Redaction
-- Last Completed Task: P1-004 — Request Context and Error Envelope code draft completed in Markdown only
-- Next Exact Action: Write P1-005 `DRAFT_NOT_APPLIED` logging redaction code in `PHASE_1_CODE.md`; do not edit runtime source until implementation mode is explicitly approved.
-- Runtime Applied: NO
+- Phase Status: DONE
+- Current Task: COMPLETED
+- Last Completed Task: P1-014 — Phase 1 Evidence and Verification
+- Next Exact Action: Continue Phase 2 in `docs/phases/phase-2/PHASE_2_PLAN.md`.
+- Runtime Applied: YES
 - Source Basis: `docs/BaoCaoKhoaLuan.docx` Chương 7.1 Phase 1; stack and constraints from thesis text.
 
 ## Repository Reality Check
@@ -33,32 +33,32 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 | Prisma foundation tables | `SystemConfiguration`, `IdempotencyRecord`, `OutboxEvent` | Fits Phase 1 | Verify constraints and evidence. |
 | Auth/tenant/RBAC scaffold | `users`, `tenants`, auth module, roles | Belongs Phase 2–4 | Do not extend in Phase 1; isolate/reconcile. |
 | Audit table | `audit_logs` tied to old user/tenant model | Partly Phase 13, foundation support only | Draft safe audit contract, no full audit workflow. |
-| Tests | API unit/Supertest tests exist | Partial Phase 1 | Add integration tests for DB primitives later. |
+| Tests | API unit/Supertest tests exist | Phase 1 verified | `npm run phase1:check` and `npm run build` PASS. |
 
 ## Task Summary
 
 | Task | Nội dung | Code Draft | Runtime | Test | Trạng thái |
 |---|---|---|---|---|---|
-| P1-001 | Repository/Foundation Reconciliation | DONE | NO | NO | CODE_DRAFT_DONE |
-| P1-002 | Workspace and Validation Baseline | DONE | NO | NO | CODE_DRAFT_DONE |
-| P1-003 | Configuration Validation | DONE | NO | NO | CODE_DRAFT_DONE |
-| P1-004 | Request Context and Error Envelope | DONE | NO | NO | CODE_DRAFT_DONE |
-| P1-005 | Logging Redaction | NOT_STARTED | NO | NO | NOT_STARTED |
-| P1-006 | PostgreSQL/Prisma Foundation Check | NOT_STARTED | NO | NO | NOT_STARTED |
-| P1-007 | Idempotency Primitive | NOT_STARTED | NO | NO | NOT_STARTED |
-| P1-008 | Transactional Outbox Primitive | NOT_STARTED | NO | NO | NOT_STARTED |
-| P1-009 | Worker Outbox Polling | NOT_STARTED | NO | NO | NOT_STARTED |
-| P1-010 | System Configuration Primitive | NOT_STARTED | NO | NO | NOT_STARTED |
-| P1-011 | Audit Foundation Contract | NOT_STARTED | NO | NO | NOT_STARTED |
-| P1-012 | Health, Readiness and Metadata | NOT_STARTED | NO | NO | NOT_STARTED |
-| P1-013 | Frontend Foundation Shell/API Client | NOT_STARTED | NO | NO | NOT_STARTED |
-| P1-014 | Phase 1 Evidence and Verification | NOT_STARTED | NO | NO | NOT_STARTED |
+| P1-001 | Repository/Foundation Reconciliation | DONE | YES | YES | VERIFIED |
+| P1-002 | Workspace and Validation Baseline | DONE | YES | YES | VERIFIED |
+| P1-003 | Configuration Validation | DONE | YES | YES | VERIFIED |
+| P1-004 | Request Context and Error Envelope | DONE | YES | YES | VERIFIED |
+| P1-005 | Logging Redaction | DONE | YES | YES | VERIFIED |
+| P1-006 | PostgreSQL/Prisma Foundation Check | DONE | YES | YES | VERIFIED |
+| P1-007 | Idempotency Primitive | DONE | YES | YES | VERIFIED |
+| P1-008 | Transactional Outbox Primitive | DONE | YES | YES | VERIFIED |
+| P1-009 | Worker Outbox Polling | DONE | YES | YES | VERIFIED |
+| P1-010 | System Configuration Primitive | DONE | YES | YES | VERIFIED |
+| P1-011 | Audit Foundation Contract | DONE | YES | YES | VERIFIED |
+| P1-012 | Health, Readiness and Metadata | DONE | YES | YES | VERIFIED |
+| P1-013 | Frontend Foundation Shell/API Client | DONE | YES | YES | VERIFIED |
+| P1-014 | Phase 1 Evidence and Verification | DONE | YES | YES | VERIFIED |
 
 ## Task Details
 
 ### P1-001 — Repository/Foundation Reconciliation
 
-- Status: CODE_DRAFT_DONE
+- Status: VERIFIED
 - Mục tiêu: Ghi rõ runtime hiện có, phân loại phần đúng Phase 1 và phần lệch Phase 2–4.
 - Tại sao cần làm: Repository đã có auth/tenant/RBAC scaffold trước khi hệ thống tracking mới được đơn giản hóa; Phase 1 không được mở rộng nhầm domain sau.
 - Phụ thuộc task nào: Phase 0 DONE.
@@ -75,7 +75,7 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 
 ### P1-002 — Workspace and Validation Baseline
 
-- Status: CODE_DRAFT_DONE
+- Status: VERIFIED
 - Mục tiêu: Chuẩn hóa script kiểm tra Phase 1 mà không thêm dependency.
 - Tại sao cần làm: Các session sau cần một lệnh nhỏ kiểm tra workspace/foundation nhất quán.
 - Phụ thuộc task nào: P1-001.
@@ -92,7 +92,7 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 
 ### P1-003 — Configuration Validation
 
-- Status: CODE_DRAFT_DONE
+- Status: VERIFIED
 - Mục tiêu: Đảm bảo env fail-fast, không leak secret value, hỗ trợ API/worker/web foundation config.
 - Tại sao cần làm: Phase 1 là nền reliability; config sai phải fail sớm trước domain workflows.
 - Phụ thuộc task nào: P1-002.
@@ -109,7 +109,7 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 
 ### P1-004 — Request Context and Error Envelope
 
-- Status: CODE_DRAFT_DONE
+- Status: VERIFIED
 - Mục tiêu: Chuẩn hóa request ID/correlation ID và error envelope ổn định.
 - Tại sao cần làm: Tất cả API Phase sau cần traceable request/error contract.
 - Phụ thuộc task nào: P1-003.
@@ -126,7 +126,7 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 
 ### P1-005 — Logging Redaction
 
-- Status: NOT_STARTED
+- Status: VERIFIED
 - Mục tiêu: Redact password/token/cookie/secret/presigned URL data from logs.
 - Tại sao cần làm: Phase 1 logging phải an toàn trước auth/upload phases.
 - Phụ thuộc task nào: P1-003.
@@ -143,7 +143,7 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 
 ### P1-006 — PostgreSQL/Prisma Foundation Check
 
-- Status: NOT_STARTED
+- Status: VERIFIED
 - Mục tiêu: Verify foundation tables/constraints without adding domain schema.
 - Tại sao cần làm: Database is source of truth for idempotency/outbox/config primitives.
 - Phụ thuộc task nào: P1-001.
@@ -160,7 +160,7 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 
 ### P1-007 — Idempotency Primitive
 
-- Status: NOT_STARTED
+- Status: VERIFIED
 - Mục tiêu: Scoped idempotency record service with request hash conflict/replay semantics.
 - Tại sao cần làm: Later approval/create commands must tolerate retry safely.
 - Phụ thuộc task nào: P1-006.
@@ -177,7 +177,7 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 
 ### P1-008 — Transactional Outbox Primitive
 
-- Status: NOT_STARTED
+- Status: VERIFIED
 - Mục tiêu: Create outbox events in the same DB transaction as a future business mutation.
 - Tại sao cần làm: Worker delivery must not replace transaction/audit evidence.
 - Phụ thuộc task nào: P1-006.
@@ -194,7 +194,7 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 
 ### P1-009 — Worker Outbox Polling
 
-- Status: NOT_STARTED
+- Status: VERIFIED
 - Mục tiêu: Worker claims/retries outbox events without owning business aggregates.
 - Tại sao cần làm: Thesis locks worker as separate process, not microservice.
 - Phụ thuộc task nào: P1-008.
@@ -211,7 +211,7 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 
 ### P1-010 — System Configuration Primitive
 
-- Status: NOT_STARTED
+- Status: VERIFIED
 - Mục tiêu: Read active system configuration safely.
 - Tại sao cần làm: Later phases need simple policy/config values without hard-code sprawl.
 - Phụ thuộc task nào: P1-006.
@@ -228,7 +228,7 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 
 ### P1-011 — Audit Foundation Contract
 
-- Status: NOT_STARTED
+- Status: VERIFIED
 - Mục tiêu: Define minimal audit event contract and redaction boundary; no full audit timeline.
 - Tại sao cần làm: Critical mutations in later phases need consistent audit metadata.
 - Phụ thuộc task nào: P1-005.
@@ -245,7 +245,7 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 
 ### P1-012 — Health, Readiness and Metadata
 
-- Status: NOT_STARTED
+- Status: VERIFIED
 - Mục tiêu: Stable `/health`, `/ready`, `/api/v1/meta` foundation APIs.
 - Tại sao cần làm: Phase handoff and Docker/local validation need observable status.
 - Phụ thuộc task nào: P1-004.
@@ -262,7 +262,7 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 
 ### P1-013 — Frontend Foundation Shell/API Client
 
-- Status: NOT_STARTED
+- Status: VERIFIED
 - Mục tiêu: Keep Next.js shell and API client foundation-only.
 - Tại sao cần làm: UI should not introduce auth/domain before backend phases.
 - Phụ thuộc task nào: P1-012.
@@ -279,7 +279,7 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 
 ### P1-014 — Phase 1 Evidence and Verification
 
-- Status: NOT_STARTED
+- Status: VERIFIED
 - Mục tiêu: Run checks and record evidence required to close Phase 1.
 - Tại sao cần làm: Markdown drafts and plans are not implementation evidence.
 - Phụ thuộc task nào: P1-001..P1-013 implemented.
@@ -297,10 +297,10 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 ## Latest Session Log
 
 - Time: 2026-07-30 Asia/Ho_Chi_Minh
-- Runtime Code Changed: NO
-- Code Draft Completed: P1-001, P1-002, P1-003, P1-004
-- Task Completed: P1-004 — Request Context and Error Envelope code draft.
-- Current Task: P1-005 — Logging Redaction.
-- Runtime Applied: NO.
-- Test Executed: NO.
-- Next Exact Action: Write P1-005 `DRAFT_NOT_APPLIED` logging redaction code in `PHASE_1_CODE.md`; do not edit runtime source until implementation mode is explicitly approved.
+- Runtime Code Changed: YES — Phase 1 implemented.
+- Code Draft Completed: P1-001..P1-014.
+- Task Completed: P1-014 — Phase 1 Evidence and Verification.
+- Current Task: Phase 2 bootstrap.
+- Runtime Applied: YES — Phase 1 implemented.
+- Test Executed: YES — `npm run phase1:check` PASS; `npm run build` PASS.
+- Next Exact Action: Continue Phase 2 in `docs/phases/phase-2/PHASE_2_PLAN.md`.

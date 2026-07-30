@@ -15,7 +15,8 @@
     "build": "npm run build --workspaces --if-present",
     "db:validate": "npm run prisma:validate --workspace apps/api",
     "db:migrate": "npm run prisma:migrate --workspace apps/api",
-    "db:seed": "npm run prisma:seed --workspace apps/api"
+    "db:seed": "npm run prisma:seed --workspace apps/api",
+    "phase1:check": "npm run db:validate && npm run typecheck && npm run lint && npm run test"
   },
   "engines": {
     "node": ">=22.0.0",

@@ -4,7 +4,11 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { env } from "../../config/env";
 
-const allowedOrigins = env.CORS_ORIGIN.split(",").map((origin) => origin.trim());
+const allowedOrigins = new Set([
+  env.FRONTEND_URL,
+  ...(env.NODE_ENV === "production" ? [] : ["http://localhost:3000", "http://localhost:3001"]),
+  ...env.CORS_ORIGIN.split(/[|,]+/).map((origin) => origin.trim()).filter(Boolean)
+]);
 
 export const helmetMiddleware = helmet();
 
@@ -15,7 +19,7 @@ export const corsMiddleware = cors({
       return;
     }
 
-    if (origin && allowedOrigins.includes(origin)) {
+    if (allowedOrigins.has(origin)) {
       callback(null, true);
       return;
     }

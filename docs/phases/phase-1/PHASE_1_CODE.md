@@ -14,13 +14,13 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 
 ## Current Progress
 
-- Current Batch: P1-005
-- Last Completed Batch: P1-004 draft completed in Markdown only
-- Next Batch: P1-005
-- Runtime Applied: NO
-- Test Executed: NO
-- Code Draft Completed: P1-001, P1-002, P1-003, P1-004
-- Next Exact Action: Write P1-005 `DRAFT_NOT_APPLIED` logging redaction code; do not edit runtime source until implementation mode is explicitly approved.
+- Current Batch: COMPLETED
+- Last Completed Batch: P1-014 — Phase 1 Evidence and Verification
+- Next Batch: Phase 2 / P2-001
+- Runtime Applied: YES — Phase 1
+- Test Executed: YES — `npm run phase1:check` PASS; `npm run build` PASS
+- Code Draft Completed: P1-001..P1-014
+- Next Exact Action: Continue Phase 2 in `docs/phases/phase-2/PHASE_2_CODE.md`.
 
 ## Global Draft Rules
 
@@ -104,7 +104,7 @@ rg -n 'model (SystemConfiguration|IdempotencyRecord|OutboxEvent|Tenant|User|Role
 
 ## Result Template
 
-- Runtime Applied: YES
+- Runtime Applied: YES/NO
 - Test Executed: inspection only
 - Result: PASS/FAIL
 - Notes:
@@ -791,19 +791,246 @@ npm run typecheck --workspace apps/api
 ### Kết quả hiện tại
 
 - Code Draft: DONE
-- Runtime Applied: NO
-- Test Executed: NO
+- Runtime Applied: YES
+- Test Executed: YES — `npm run test --workspace apps/api -- requestId.test.ts errorHandler.test.ts` PASS; `npm run typecheck --workspace apps/api` PASS
 - Next Action: P1-005
+
+
+## P1-005 — Logging Redaction
+
+### Status
+
+VERIFIED
+
+### Target Files
+
+- `apps/api/src/common/logger/logger.ts`
+- `apps/api/tests/logger.test.ts`
+
+### Code
+
+Runtime implemented. `redact` is exported, recursively handles nested metadata, sensitive keys and signed URL values.
+
+### Kết quả hiện tại
+
+- Code Draft: DONE
+- Runtime Applied: YES
+- Test Executed: YES — covered by `npm run phase1:check`
+- Next Action: P1-006
+
+## P1-006 — PostgreSQL/Prisma Foundation Check
+
+### Status
+
+VERIFIED
+
+### Target Files
+
+- `apps/api/prisma/schema.prisma`
+- root `package.json`
+
+### Code
+
+Runtime verified. Foundation tables `system_configurations`, `idempotency_records`, `outbox_events` exist in Prisma schema. `phase1:check` added to root scripts.
+
+### Kết quả hiện tại
+
+- Code Draft: DONE
+- Runtime Applied: YES
+- Test Executed: YES — `npm run db:validate` PASS
+- Next Action: P1-007
+
+## P1-007 — Idempotency Primitive
+
+### Status
+
+VERIFIED
+
+### Target Files
+
+- `apps/api/src/common/idempotency/idempotency.service.ts`
+- `apps/api/tests/idempotencyService.test.ts`
+
+### Code
+
+Runtime implemented. Provides stable payload hashing, begin/replay/conflict semantics and completion helper.
+
+### Kết quả hiện tại
+
+- Code Draft: DONE
+- Runtime Applied: YES
+- Test Executed: YES — covered by `npm run phase1:check`
+- Next Action: P1-008
+
+## P1-008 — Transactional Outbox Primitive
+
+### Status
+
+VERIFIED
+
+### Target Files
+
+- `apps/api/src/common/outbox/outbox.repository.ts`
+- `apps/api/tests/outboxRepository.test.ts`
+
+### Code
+
+Runtime implemented. Outbox enqueue requires caller-provided transaction object; no business aggregate ownership.
+
+### Kết quả hiện tại
+
+- Code Draft: DONE
+- Runtime Applied: YES
+- Test Executed: YES — covered by `npm run phase1:check`
+- Next Action: P1-009
+
+## P1-009 — Worker Outbox Polling
+
+### Status
+
+VERIFIED
+
+### Target Files
+
+- `apps/worker/src/index.ts`
+
+### Code
+
+Runtime implemented. Worker exposes `claimAndPublish`, uses `FOR UPDATE SKIP LOCKED`, only updates `outbox_events`, and starts loop only when executed as main module.
+
+### Kết quả hiện tại
+
+- Code Draft: DONE
+- Runtime Applied: YES
+- Test Executed: YES — worker typecheck/build covered by `npm run phase1:check` and `npm run build`
+- Next Action: P1-010
+
+## P1-010 — System Configuration Primitive
+
+### Status
+
+VERIFIED
+
+### Target Files
+
+- `apps/api/src/modules/system/system.repository.ts`
+- `apps/api/tests/systemRepository.test.ts`
+
+### Code
+
+Runtime implemented. Adds `getActiveSystemConfiguration(key)` on `system_configurations`.
+
+### Kết quả hiện tại
+
+- Code Draft: DONE
+- Runtime Applied: YES
+- Test Executed: YES — covered by `npm run phase1:check`
+- Next Action: P1-011
+
+## P1-011 — Audit Foundation Contract
+
+### Status
+
+VERIFIED
+
+### Target Files
+
+- `apps/api/src/common/audit/auditEvent.ts`
+- `apps/api/tests/auditEvent.test.ts`
+
+### Code
+
+Runtime implemented. Adds minimal immutable audit event contract without full Phase 13 audit workflow.
+
+### Kết quả hiện tại
+
+- Code Draft: DONE
+- Runtime Applied: YES
+- Test Executed: YES — covered by `npm run phase1:check`
+- Next Action: P1-012
+
+## P1-012 — Health, Readiness and Metadata
+
+### Status
+
+VERIFIED
+
+### Target Files
+
+- `apps/api/src/modules/health/health.types.ts`
+- `apps/api/src/modules/health/health.service.ts`
+- existing health tests
+
+### Code
+
+Runtime implemented. Meta endpoint includes `implementationStatus: "foundation-in-progress"`; response envelope includes request/correlation metadata from P1-004.
+
+### Kết quả hiện tại
+
+- Code Draft: DONE
+- Runtime Applied: YES
+- Test Executed: YES — covered by `npm run phase1:check`
+- Next Action: P1-013
+
+## P1-013 — Frontend Foundation Shell/API Client
+
+### Status
+
+VERIFIED
+
+### Target Files
+
+- `apps/web/src/features/health/health.api.ts`
+- `apps/web/src/features/health/HealthStatus.tsx`
+
+### Code
+
+Runtime implemented. Web health DTO includes `correlationId`; UI displays Request ID and Correlation ID only, no auth/domain UI.
+
+### Kết quả hiện tại
+
+- Code Draft: DONE
+- Runtime Applied: YES
+- Test Executed: YES — web typecheck/build covered by `npm run phase1:check` and `npm run build`
+- Next Action: P1-014
+
+## P1-014 — Phase 1 Evidence and Verification
+
+### Status
+
+VERIFIED
+
+### Target Files
+
+- `docs/ROADMAP.md`
+- `docs/phases/phase-1/PHASE_1_PLAN.md`
+- `docs/phases/phase-1/PHASE_1_CODE.md`
+
+### Code
+
+No runtime code. Phase verification commands passed:
+
+```bash
+npm run phase1:check
+npm run build
+```
+
+### Kết quả hiện tại
+
+- Code Draft: DONE
+- Runtime Applied: YES
+- Test Executed: YES
+- Next Action: Phase 2 / P2-001
 
 ## Latest Session Log
 
 - Time: 2026-07-30 Asia/Ho_Chi_Minh
 - Executor: Codex CLI
-- Work Performed: Created Markdown-only code batches P1-001..P1-004; P1-004 adds request/correlation context, stable error envelope, response metadata and tests as `DRAFT_NOT_APPLIED`.
-- Runtime Code Changed: NO
-- Test Executed: NO
-- Task Completed: P1-004 — Request Context and Error Envelope code draft.
-- Current Task: P1-005 — Logging Redaction.
-- Runtime Applied: NO.
-- Test Executed: NO.
-- Next Exact Action: Write P1-005 `DRAFT_NOT_APPLIED` logging redaction code; do not edit runtime source until implementation mode is explicitly approved.
+- Work Performed: Implemented and verified all Phase 1 runtime tasks P1-001..P1-014; did not implement Phase 2 runtime.
+- Runtime Code Changed: YES — Phase 1.
+- Test Executed: YES — `npm run phase1:check` PASS; `npm run build` PASS.
+- Task Completed: P1-014 — Phase 1 Evidence and Verification.
+- Current Task: Phase 2 / P2-001.
+- Runtime Applied: YES — Phase 1.
+- Test Executed: YES.
+- Next Exact Action: Continue Phase 2 in `docs/phases/phase-2/PHASE_2_CODE.md`.

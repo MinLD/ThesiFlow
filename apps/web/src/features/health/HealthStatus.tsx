@@ -47,6 +47,10 @@ export function HealthStatus() {
           <dt className="font-medium">Request ID</dt>
           <dd className="break-all">{healthQuery.data.meta.requestId}</dd>
         </div>
+        <div>
+          <dt className="font-medium">Correlation ID</dt>
+          <dd className="break-all">{healthQuery.data.meta.correlationId}</dd>
+        </div>
       </dl>
     </section>
   );

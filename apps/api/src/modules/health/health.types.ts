@@ -17,4 +17,5 @@ export type MetaStatus = {
   version: string;
   architecture: "modular-monolith-first";
   phase: "phase-1-foundation";
+  implementationStatus: "foundation-in-progress";
 };

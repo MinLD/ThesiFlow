@@ -10,10 +10,10 @@ const env = z.object({
 
 const pool = new Pool({ connectionString: env.DATABASE_URL });
 
-type OutboxRow = { id: string };
+export type OutboxRow = { id: string };
 
-async function claimAndPublish(): Promise<number> {
-  const client = await pool.connect();
+export async function claimAndPublish(targetPool: Pick<Pool, "connect"> = pool, claimLimit = env.OUTBOX_CLAIM_LIMIT): Promise<number> {
+  const client = await targetPool.connect();
 
 
   try {
@@ -32,7 +32,7 @@ async function claimAndPublish(): Promise<number> {
         )
         RETURNING id
       `,
-      [env.OUTBOX_CLAIM_LIMIT]
+      [claimLimit]
     );
 
     if (rows.length > 0) {
@@ -66,4 +66,6 @@ async function loop(): Promise<void> {
 process.on("SIGTERM", () => void pool.end().finally(() => process.exit(0)));
 process.on("SIGINT", () => void pool.end().finally(() => process.exit(0)));
 
-void loop();
+if (require.main === module) {
+  void loop();
+}

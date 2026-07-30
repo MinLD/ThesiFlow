@@ -10,9 +10,14 @@ const levelWeight: Record<LogLevel, number> = {
   error: 40
 };
 
-const sensitiveKeyPattern = /password|secret|token|cookie|authorization/i;
+const sensitiveKeyPattern = /password|secret|token|cookie|authorization|credential|api[-_]?key|presigned/i;
+const sensitiveValuePattern = /(X-Amz-Signature=|X-Amz-Credential=|token=|access_token=|refresh_token=)/i;
 
-function redact(value: unknown): unknown {
+export function redact(value: unknown): unknown {
+  if (typeof value === "string") {
+    return sensitiveValuePattern.test(value) ? "[REDACTED]" : value;
+  }
+
   if (Array.isArray(value)) {
     return value.map(redact);
   }
