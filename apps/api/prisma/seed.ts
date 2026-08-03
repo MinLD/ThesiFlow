@@ -13,9 +13,9 @@ const permissions = [
     description: "Read current user profile",
   },
   {
-    key: "user:read",
+    key: "account:read",
     category: "identity",
-    description: "Read users in allowed scope",
+    description: "Read accounts in allowed scope",
   },
   {
     key: "role:assign",
@@ -28,17 +28,17 @@ const roles = [
   {
     key: "university_admin",
     name: "University Admin",
-    permissionKeys: ["auth:me", "user:read", "role:assign"],
+    permissionKeys: ["auth:me", "account:read", "role:assign"],
   },
   {
     key: "faculty_admin",
     name: "Faculty Admin",
-    permissionKeys: ["auth:me", "user:read"],
+    permissionKeys: ["auth:me", "account:read"],
   },
   {
     key: "department_manager",
     name: "Department Manager",
-    permissionKeys: ["auth:me", "user:read"],
+    permissionKeys: ["auth:me", "account:read"],
   },
   { key: "lecturer", name: "Lecturer", permissionKeys: ["auth:me"] },
   { key: "reviewer", name: "Reviewer", permissionKeys: ["auth:me"] },
@@ -118,44 +118,20 @@ async function main() {
     }
 
     const passwordHash = await argon2.hash(env.ADMIN_PASSWORD);
-    const admin = await tx.user.upsert({
-      where: {
-        tenantId_email: {
-          tenantId: tenant.id,
-          email: env.ADMIN_EMAIL.toLowerCase(),
-        },
-      },
-      update: { passwordHash, status: "active", fullName: "Admin" },
+    const admin = await tx.account.upsert({
+      where: { email: env.ADMIN_EMAIL.toLowerCase() },
+      update: { status: "active", fullName: "Admin" },
       create: {
-        tenantId: tenant.id,
         email: env.ADMIN_EMAIL.toLowerCase(),
-        passwordHash,
         fullName: "Admin",
         status: "active",
       },
     });
 
-    const adminRole = await tx.role.findUniqueOrThrow({
-      where: {
-        tenantId_key_scope: {
-          tenantId: tenant.id,
-          key: "university_admin",
-          scope: "tenant",
-        },
-      },
-    });
-
-    await tx.userRole.deleteMany({
-      where: { tenantId: tenant.id, userId: admin.id, roleId: adminRole.id, scope: "tenant" },
-    });
-
-    await tx.userRole.create({
-      data: {
-        tenantId: tenant.id,
-        userId: admin.id,
-        roleId: adminRole.id,
-        scope: "tenant",
-      },
+    await tx.accountCredential.upsert({
+      where: { accountId: admin.id },
+      update: { passwordHash, passwordUpdatedAt: new Date() },
+      create: { accountId: admin.id, passwordHash },
     });
   });
 }

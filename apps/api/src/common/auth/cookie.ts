@@ -16,8 +16,9 @@ export function setRefreshCookie(res: Response, token: string): void {
 }
 
 export function clearRefreshCookie(res: Response): void {
-  res.clearCookie(env.REFRESH_TOKEN_COOKIE_NAME, {
+  res.cookie(env.REFRESH_TOKEN_COOKIE_NAME, "", {
     ...getRefreshCookieOptions(),
-    maxAge: undefined,
+    maxAge: 0,
+    expires: new Date(0),
   });
 }

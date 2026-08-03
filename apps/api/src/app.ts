@@ -1,9 +1,11 @@
 import express from "express";
+import cookieParser from "cookie-parser";
 import { errorHandler } from "./common/middleware/errorHandler";
 import { notFoundHandler } from "./common/middleware/notFound";
 import { requestIdMiddleware } from "./common/middleware/requestId";
 import { corsMiddleware, helmetMiddleware, jsonBodyParser, rateLimitMiddleware } from "./common/middleware/security";
 import { getMeta, getReady } from "./modules/health/health.controller";
+import { authRouter } from "./modules/auth/auth.routes";
 import { healthRouter } from "./modules/health/health.routes";
 
 export function createApp() {
@@ -13,8 +15,10 @@ export function createApp() {
   app.use(helmetMiddleware);
   app.use(corsMiddleware);
   app.use(jsonBodyParser);
+  app.use(cookieParser());
   app.use(rateLimitMiddleware);
 
+  app.use("/auth", authRouter);
   app.use("/health", healthRouter);
   app.get("/ready", getReady);
   app.get("/api/v1/meta", getMeta);

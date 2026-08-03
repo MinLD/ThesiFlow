@@ -14,5 +14,16 @@ export default [
       "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
       "@typescript-eslint/no-explicit-any": "error"
     }
+  },
+  {
+    files: ["apps/api/src/modules/auth/**/*.service.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          "patterns": ["**/database/prisma"]
+        }
+      ]
+    }
   }
 ];

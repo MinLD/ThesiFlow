@@ -7,12 +7,6 @@ datasource db {
   provider = "postgresql"
 }
 
-enum UserStatus {
-  invited
-  active
-  disabled
-}
-
 enum TenantPlan {
   FREE
   STANDARD
@@ -27,18 +21,12 @@ enum RoleScope {
   project
 }
 
-enum RefreshTokenStatus {
-  active
-  revoked
-  expired
-}
-
 enum AuditAction {
   LOGIN_SUCCESS
   LOGIN_FAILED
   TOKEN_REFRESHED
   LOGOUT
-  USER_CREATED
+  ACCOUNT_CREATED
   ROLE_ASSIGNED
 }
 
@@ -64,6 +52,104 @@ enum OutboxEventStatus {
 enum SystemInfoStatus {
   active
   disabled
+}
+
+enum AccountStatus {
+  pending_verification
+  active
+  disabled
+}
+
+enum AccountTokenPurpose {
+  email_verification
+  password_reset
+}
+
+enum AccountTokenStatus {
+  active
+  consumed
+  revoked
+  expired
+}
+
+enum SessionStatus {
+  active
+  revoked
+  expired
+}
+
+model Account {
+  id              String        @id @default(uuid())
+  email           String        @unique
+  fullName        String        @map("full_name")
+  status          AccountStatus @default(pending_verification)
+  emailVerifiedAt DateTime?     @map("email_verified_at")
+  lastLoginAt     DateTime?     @map("last_login_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  credentials AccountCredential[]
+  tokens      AccountToken[]
+  sessions    Session[]
+
+  @@index([status])
+  @@map("accounts")
+}
+
+model AccountCredential {
+  id                String                @id @default(uuid())
+  accountId         String                @map("account_id")
+  passwordHash      String                @map("password_hash")
+  passwordUpdatedAt DateTime?             @map("password_updated_at")
+  createdAt         DateTime              @default(now()) @map("created_at")
+  updatedAt         DateTime              @updatedAt @map("updated_at")
+  account           Account               @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId])
+  @@map("account_credentials")
+}
+
+model AccountToken {
+  id         String              @id @default(uuid())
+  accountId  String              @map("account_id")
+  tokenHash  String              @unique @map("token_hash")
+  purpose    AccountTokenPurpose
+  status     AccountTokenStatus  @default(active)
+  expiresAt  DateTime            @map("expires_at")
+  consumedAt DateTime?           @map("consumed_at")
+  revokedAt  DateTime?           @map("revoked_at")
+  createdAt  DateTime            @default(now()) @map("created_at")
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, purpose, status])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("account_tokens")
+}
+
+model Session {
+  id                   String        @id @default(uuid())
+  accountId            String        @map("account_id")
+  refreshTokenHash     String        @unique @map("refresh_token_hash")
+  status               SessionStatus @default(active)
+  expiresAt            DateTime      @map("expires_at")
+  revokedAt            DateTime?     @map("revoked_at")
+  rotatedFromSessionId String?       @map("rotated_from_session_id")
+  reusedAt             DateTime?     @map("reused_at")
+  userAgent            String?       @map("user_agent")
+  ipAddress            String?       @map("ip_address")
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+
+  account     Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  rotatedFrom Session?  @relation("SessionRotation", fields: [rotatedFromSessionId], references: [id])
+  rotatedTo   Session[] @relation("SessionRotation")
+
+  @@index([accountId, status])
+  @@index([refreshTokenHash, status])
+  @@index([expiresAt])
+  @@map("sessions")
 }
 
 model SystemInfo {
@@ -139,35 +225,12 @@ model Tenant {
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
   deletedAt     DateTime?      @map("deleted_at")
-  users         User[]
   roles         Role[]
-  refreshTokens RefreshToken[]
   auditLogs     AuditLog[]
 
   @@index([status])
   @@index([deletedAt])
   @@map("tenants")
-}
-
-model User {
-  id           String     @id @default(uuid())
-  tenantId     String     @map("tenant_id")
-  email        String
-  passwordHash String?    @map("password_hash")
-  fullName     String     @map("full_name")
-  status       UserStatus @default(invited)
-  lastLoginAt  DateTime?  @map("last_login_at")
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
-
-  tenant        Tenant         @relation(fields: [tenantId], references: [id])
-  userRoles     UserRole[]
-  refreshTokens RefreshToken[]
-  auditLogs     AuditLog[]
-
-  @@unique([tenantId, email])
-  @@index([tenantId, status])
-  @@map("users")
 }
 
 model Role {
@@ -182,7 +245,6 @@ model Role {
 
   tenant          Tenant?          @relation(fields: [tenantId], references: [id])
   rolePermissions RolePermission[]
-  userRoles       UserRole[]
 
   @@unique([tenantId, key, scope])
   @@map("roles")
@@ -212,48 +274,9 @@ model RolePermission {
   @@map("role_permissions")
 }
 
-model UserRole {
-  id           String    @id @default(uuid())
-  tenantId     String    @map("tenant_id")
-  userId       String    @map("user_id")
-  roleId       String    @map("role_id")
-  scope        RoleScope @default(tenant)
-  facultyId    String?   @map("faculty_id")
-  departmentId String?   @map("department_id")
-  projectId    String?   @map("project_id")
-  createdAt    DateTime  @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, roleId, scope, facultyId, departmentId, projectId])
-  @@index([tenantId, userId])
-  @@map("user_roles")
-}
-
-model RefreshToken {
-  id        String             @id @default(uuid())
-  tenantId  String             @map("tenant_id")
-  userId    String             @map("user_id")
-  tokenHash String             @unique @map("token_hash")
-  status    RefreshTokenStatus @default(active)
-  expiresAt DateTime           @map("expires_at")
-  revokedAt DateTime?          @map("revoked_at")
-  createdAt DateTime           @default(now()) @map("created_at")
-
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId, userId])
-  @@index([tokenHash, status])
-  @@index([expiresAt])
-  @@map("refresh_tokens")
-}
-
 model AuditLog {
   id         String      @id @default(uuid())
   tenantId   String?     @map("tenant_id")
-  userId     String?     @map("user_id")
   action     AuditAction
   resource   String?
   resourceId String?     @map("resource_id")
@@ -262,11 +285,7 @@ model AuditLog {
   createdAt  DateTime    @default(now()) @map("created_at")
 
   tenant Tenant? @relation(fields: [tenantId], references: [id])
-  user   User?   @relation(fields: [userId], references: [id])
 
   @@index([tenantId, action])
-  @@index([userId, createdAt])
   @@map("audit_logs")
-
 }
-  

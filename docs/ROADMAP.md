@@ -14,16 +14,16 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 
 ## Current Snapshot
 
-- Current Phase: Phase 2 — Global account authentication
+- Current Phase: Phase 3 — Organization/Tenant onboarding
 - Current Phase Status: IN_PROGRESS
-- Current Task: P2-001 — Phase 2 authentication planning and code draft
-- Last Completed Task: Phase 1 — Foundation implemented and verified
-- Next Exact Action: Read `docs/phases/phase-2/PHASE_2_PLAN.md`, then write P2-001 `DRAFT_NOT_APPLIED` auth/account code in `docs/phases/phase-2/PHASE_2_CODE.md`; do not edit runtime source until implementation mode is explicitly approved.
+- Current Task: P3-001 — Organization/membership model reconciliation
+- Last Completed Task: P2-006 — SMTP-backed email verification and password reset
+- Next Exact Action: Read `docs/phases/phase-3/PHASE_3_PLAN.md`, then implement P3-001 organization/membership model reconciliation; do not start P3-002 or Phase 4.
 - Official Daily Status Source: `docs/ROADMAP.md`
-- Current Phase Plan: `docs/phases/phase-2/PHASE_2_PLAN.md`
-- Current Phase Code Drafts: `docs/phases/phase-2/PHASE_2_CODE.md`
-- Runtime Code Changed In Latest Session: YES — Phase 1 only
-- Test Executed In Latest Session: YES — `npm run phase1:check` PASS; `npm run build` PASS
+- Current Phase Plan: `docs/phases/phase-3/PHASE_3_PLAN.md`
+- Current Phase Code Drafts: `docs/phases/phase-3/PHASE_3_CODE.md`
+- Runtime Code Changed In Latest Session: YES — upgraded web auth landing/login UI to production-style Phase 2 product surface
+- Test Executed In Latest Session: YES — web typecheck/lint/build PASS; port 3000 freed by stopping `thesiflow-web`
 
 ## Source References
 
@@ -37,8 +37,8 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 |---|---|---|---|---|---|
 | Phase 0 | Architecture reconciliation và scope freeze | Đóng băng bốn lớp phạm vi, thuật ngữ, invariant, module boundary, Database Capability Manifest và evidence plan | Scope, stack, module boundaries, ADR, risk, evidence, sign-off | Phase 0 sign-off recorded and approved | DONE |
 | Phase 1 | Foundation, monorepo, PostgreSQL, worker, outbox và test foundation | Dựng nền tảng chạy được và các primitive độ tin cậy trước domain | Workspace, config, PostgreSQL/Prisma, request ID, error envelope, logging/redaction, idempotency, outbox, worker, system config, health, test foundation | `npm run phase1:check` PASS; `npm run build` PASS | DONE |
-| Phase 2 | Global account authentication | Có account toàn cục và session an toàn, chưa gắn cứng tenant | Accounts, credentials, tokens, sessions, auth API/UI | Global auth works; no account tenant coupling; security tests pass | IN_PROGRESS |
-| Phase 3 | Organization/Tenant onboarding | Tạo biên tổ chức và membership rõ nguồn | Organizations, tenant memberships, invitations, tenant context switch | Active membership context verified; tenant isolation baseline pass | NOT_STARTED |
+| Phase 2 | Global account authentication | Có account toàn cục và session an toàn, chưa gắn cứng tenant | Accounts, credentials, tokens, sessions, auth API/UI | Global auth works; no account tenant coupling; security tests pass | DONE |
+| Phase 3 | Organization/Tenant onboarding | Tạo biên tổ chức và membership rõ nguồn | Organizations, tenant memberships, invitations, tenant context switch | Active membership context verified; tenant isolation baseline pass | IN_PROGRESS |
 | Phase 4 | RBAC và resource authorization | Thiết lập deny-by-default theo tenant, role, scope, relationship và state | Permission catalog, roles, assignments, resource guards | Cross-tenant, IDOR and privilege escalation tests pass | NOT_STARTED |
 | Phase 5 | Academic organization và profile | Mô hình hóa cấu trúc trường/trung tâm và placement lịch sử | Academic units, student/lecturer profiles, placement history | Academic hierarchy/profile lifecycle verified | NOT_STARTED |
 | Phase 6 | Campaign framework và campaign types | Cho phép cấu hình campaign/template thay vì workflow hard-code | Campaign templates, versions, campaigns, participants, policy snapshots | Campaign lifecycle and template versioning verified | NOT_STARTED |
@@ -66,13 +66,13 @@ Khi Phase 1 hoàn thành: đặt Phase 1 = DONE, Phase 2 = IN_PROGRESS, tạo `d
 
 ## Latest Session Log
 
-- Time: 2026-07-30 Asia/Ho_Chi_Minh
+- Time: 2026-08-03 Asia/Ho_Chi_Minh
 - Executor: Codex CLI
-- Work Performed: Implemented and verified Phase 1 Foundation; created Phase 2 tracking files.
-- Runtime Code Changed: YES — Phase 1 only.
-- Files Deleted: `docs/MASTER_IMPLEMENTATION_ROADMAP.md`; obsolete Phase 1 evidence folder.
-- Task Completed: Phase 1 — Foundation implemented and verified.
-- Current Task: P2-001 — Phase 2 authentication planning and code draft.
-- Runtime Applied: YES — Phase 1 only.
-- Test Executed: YES — `npm run phase1:check` PASS; `npm run build` PASS.
-- Next Exact Action: Read `docs/phases/phase-2/PHASE_2_PLAN.md`, then write P2-001 `DRAFT_NOT_APPLIED` auth/account code in `docs/phases/phase-2/PHASE_2_CODE.md`; do not edit runtime source until implementation mode is explicitly approved.
+- Work Performed: Replaced test auth panel with production-style ThesiFlow login/register landing UI.
+- Runtime Code Changed: YES — `apps/web/src/app/page.tsx`, `apps/web/src/features/auth/AuthPanel.tsx`, `apps/web/src/features/health/HealthStatus.tsx`, `apps/web/src/app/globals.css`.
+- Files Deleted: NONE.
+- Task Completed: Phase 2 auth UI production polish.
+- Current Task: P3-001 — Organization/membership model reconciliation.
+- Runtime Applied: YES for P2-001/P2-006; NO for Phase 3.
+- Test Executed: YES — `npm run typecheck --workspace apps/web`; `npm run lint --workspace apps/web`; `npm run build --workspace apps/web` PASS.
+- Next Exact Action: Read `docs/phases/phase-3/PHASE_3_PLAN.md`, then implement P3-001 organization/membership model reconciliation; do not start P3-002 or Phase 4.

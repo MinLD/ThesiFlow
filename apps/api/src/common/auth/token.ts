@@ -4,7 +4,7 @@ import { env } from "../../config/env";
 
 type AccessTokenPayload = {
   sub: string;
-  tenantId: string;
+  sessionId: string;
   email: string;
 };
 function signAccessToken(payload: AccessTokenPayload): string {
