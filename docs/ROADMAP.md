@@ -17,13 +17,13 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 - Current Phase: Phase 3 — Organization/Tenant onboarding
 - Current Phase Status: IN_PROGRESS
 - Current Task: P3-001 — Organization/membership model reconciliation
-- Last Completed Task: P2-006 — SMTP-backed email verification and password reset
+- Last Completed Task: P2-HOTFIX — Hybrid auth security refactor
 - Next Exact Action: Read `docs/phases/phase-3/PHASE_3_PLAN.md`, then implement P3-001 organization/membership model reconciliation; do not start P3-002 or Phase 4.
 - Official Daily Status Source: `docs/ROADMAP.md`
 - Current Phase Plan: `docs/phases/phase-3/PHASE_3_PLAN.md`
 - Current Phase Code Drafts: `docs/phases/phase-3/PHASE_3_CODE.md`
-- Runtime Code Changed In Latest Session: YES — upgraded web auth landing/login UI to production-style Phase 2 product surface
-- Test Executed In Latest Session: YES — web typecheck/lint/build PASS; port 3000 freed by stopping `thesiflow-web`
+- Runtime Code Changed In Latest Session: YES — hardened Phase 2 hybrid auth: memory-only access token, HttpOnly rotating refresh cookie, session family reuse revocation, origin/CORS guard, session management, audit actions
+- Test Executed In Latest Session: YES — `db:validate`, API/web typecheck, API/web lint, API/web build PASS; full API test PASS 15 files / 42 tests
 
 ## Source References
 
@@ -68,11 +68,11 @@ Khi Phase 1 hoàn thành: đặt Phase 1 = DONE, Phase 2 = IN_PROGRESS, tạo `d
 
 - Time: 2026-08-03 Asia/Ho_Chi_Minh
 - Executor: Codex CLI
-- Work Performed: Replaced test auth panel with production-style ThesiFlow login/register landing UI.
-- Runtime Code Changed: YES — `apps/web/src/app/page.tsx`, `apps/web/src/features/auth/AuthPanel.tsx`, `apps/web/src/features/health/HealthStatus.tsx`, `apps/web/src/app/globals.css`.
+- Work Performed: Hardened Phase 2 hybrid authentication and frontend token lifecycle.
+- Runtime Code Changed: YES — backend auth/session/security/Prisma plus frontend auth provider/api client memory-token flow.
 - Files Deleted: NONE.
-- Task Completed: Phase 2 auth UI production polish.
+- Task Completed: P2-HOTFIX — Hybrid auth security refactor.
 - Current Task: P3-001 — Organization/membership model reconciliation.
 - Runtime Applied: YES for P2-001/P2-006; NO for Phase 3.
-- Test Executed: YES — `npm run typecheck --workspace apps/web`; `npm run lint --workspace apps/web`; `npm run build --workspace apps/web` PASS.
+- Test Executed: YES — `npm run db:validate`; API/web typecheck; API/web lint; API/web build; `DATABASE_URL=... npm run test --workspace apps/api` PASS 15 files / 42 tests.
 - Next Exact Action: Read `docs/phases/phase-3/PHASE_3_PLAN.md`, then implement P3-001 organization/membership model reconciliation; do not start P3-002 or Phase 4.

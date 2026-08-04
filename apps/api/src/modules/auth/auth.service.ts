@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { AppError } from "../../common/errors/AppError";
 import {
   createOpaqueRefreshToken,
@@ -17,14 +18,20 @@ import {
 } from "./account-token.service";
 import {
   createAccountWithPassword,
+  createAuthAuditLog,
   createSession,
+  consumeActiveSession,
   findAccountByEmail,
   findAccountById,
+  findSessionById,
   findSessionByRefreshTokenHash,
+  listSessionsForAccount,
   markSessionExpired,
   markSessionReused,
   markSessionRevoked,
   revokeActiveSessionsForAccount,
+  revokeActiveSessionsForFamily,
+  revokeSessionForAccount,
   runAuthTransaction,
   markEmailVerified,
   updateAccountPassword,
@@ -56,6 +63,20 @@ type AuthResult = {
   account: AccountDto;
   accessToken: string;
   refreshToken: string;
+  sessionId: string;
+};
+
+type SafeSessionDto = {
+  id: string;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+  expiresAt: Date;
+  revokedAt: Date | null;
+  reusedAt: Date | null;
+  userAgent: string | null;
+  ipAddress: string | null;
+  current: boolean;
 };
 
 type RegisterResult = {
@@ -96,10 +117,12 @@ async function createSessionTokens(
   account: AccountDto,
   context: RequestContext,
   rotatedFromSessionId?: string,
+  familyId = randomUUID(),
 ): Promise<AuthResult> {
   const refreshToken = createOpaqueRefreshToken();
   const session = await createSession({
     accountId: account.id,
+    familyId,
     refreshTokenHash: hashRefreshToken(refreshToken),
     expiresAt: getRefreshTokenExpiresAt(),
     ...(context.userAgent ? { userAgent: context.userAgent } : {}),
@@ -115,6 +138,7 @@ async function createSessionTokens(
       email: account.email,
     }),
     refreshToken,
+    sessionId: session.id,
   };
 }
 
@@ -147,6 +171,7 @@ async function register(input: RegisterInput): Promise<RegisterResult> {
     fullName: account.fullName,
     token: verification.token,
   });
+  await createAuthAuditLog({ action: "ACCOUNT_CREATED", accountId: account.id });
 
   return {
     account: toAccountDto(account),
@@ -188,6 +213,7 @@ async function login(
   const passwordCredential = account?.credentials[0];
 
   if (!account || !passwordCredential) {
+    await createAuthAuditLog({ action: "LOGIN_FAILED", reason: "missing_account_or_credential" });
     throw new AppError(401, "INVALID_CREDENTIALS", "Invalid email or password");
   }
 
@@ -196,13 +222,16 @@ async function login(
     input.password,
   );
   if (!passwordMatches) {
+    await createAuthAuditLog({ action: "LOGIN_FAILED", accountId: account.id, reason: "wrong_password" });
     throw new AppError(401, "INVALID_CREDENTIALS", "Invalid email or password");
   }
 
   assertActiveAccount(account);
   await updateLastLoginAt(account.id);
 
-  return createSessionTokens(toAccountDto(account), context);
+  const result = await createSessionTokens(toAccountDto(account), context);
+  await createAuthAuditLog({ action: "LOGIN_SUCCESS", accountId: account.id, sessionId: result.sessionId });
+  return result;
 }
 
 async function refresh(
@@ -220,7 +249,13 @@ async function refresh(
 
   if (session.status !== "active") {
     await markSessionReused(session.id, now);
-    await revokeActiveSessionsForAccount(session.accountId, now);
+    await revokeActiveSessionsForFamily(session.familyId, now);
+    await createAuthAuditLog({
+      action: "REFRESH_TOKEN_REUSED",
+      accountId: session.accountId,
+      sessionId: session.id,
+      familyId: session.familyId,
+    });
     throw new AppError(401, "INVALID_REFRESH_TOKEN", "Invalid refresh token");
   }
 
@@ -232,10 +267,24 @@ async function refresh(
   assertActiveAccount(session.account);
 
   return runAuthTransaction(async (db) => {
-    await markSessionRevoked(session.id, now, db);
+    const consumedCount = await consumeActiveSession({ id: session.id, now, db });
+    if (consumedCount !== 1) {
+      await markSessionReused(session.id, now, db);
+      await revokeActiveSessionsForFamily(session.familyId, now, db);
+      await createAuthAuditLog({
+        action: "REFRESH_TOKEN_REUSED",
+        accountId: session.accountId,
+        sessionId: session.id,
+        familyId: session.familyId,
+        db,
+      });
+      throw new AppError(401, "INVALID_REFRESH_TOKEN", "Invalid refresh token");
+    }
+
     const nextRefreshToken = createOpaqueRefreshToken();
     const nextSession = await createSession({
       accountId: session.accountId,
+      familyId: session.familyId,
       refreshTokenHash: hashRefreshToken(nextRefreshToken),
       expiresAt: getRefreshTokenExpiresAt(),
       rotatedFromSessionId: session.id,
@@ -245,6 +294,14 @@ async function refresh(
     });
 
     const account = toAccountDto(session.account);
+    await createAuthAuditLog({
+      action: "TOKEN_REFRESHED",
+      accountId: account.id,
+      sessionId: nextSession.id,
+      familyId: session.familyId,
+      db,
+    });
+
     return {
       account,
       accessToken: signAccessToken({
@@ -253,6 +310,7 @@ async function refresh(
         email: account.email,
       }),
       refreshToken: nextRefreshToken,
+      sessionId: nextSession.id,
     };
   });
 }
@@ -267,6 +325,32 @@ async function logout(refreshToken?: string): Promise<void> {
   );
   if (session?.status === "active") {
     await markSessionRevoked(session.id, new Date());
+    await createAuthAuditLog({ action: "LOGOUT", accountId: session.accountId, sessionId: session.id, familyId: session.familyId });
+  }
+}
+
+async function getAuthenticatedContext(accessToken?: string): Promise<{
+  account: AccountDto;
+  sessionId: string;
+}> {
+  if (!accessToken) {
+    throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
+  }
+
+  try {
+    const payload = verifyAccessToken(accessToken);
+    const account = await findAccountById(payload.sub);
+    if (!account) {
+      throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
+    }
+
+    assertActiveAccount(account);
+    return { account: toAccountDto(account), sessionId: payload.sessionId };
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
   }
 }
 
@@ -323,6 +407,7 @@ async function resetPassword(
       db,
     });
     await revokeActiveSessionsForAccount(consumed.accountId, now, db);
+    await createAuthAuditLog({ action: "RESET_PASSWORD_SUCCESS", accountId: consumed.accountId, db });
   });
 
   return { reset: true };
@@ -331,24 +416,61 @@ async function resetPassword(
 async function getCurrentAccount(
   accessToken?: string,
 ): Promise<{ account: AccountDto }> {
-  if (!accessToken) {
-    throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
+  const context = await getAuthenticatedContext(accessToken);
+  return { account: context.account };
+}
+
+function maskIpAddress(ipAddress: string | null): string | null {
+  if (!ipAddress) {
+    return null;
   }
 
-  try {
-    const payload = verifyAccessToken(accessToken);
-    const account = await findAccountById(payload.sub);
-    if (!account) {
-      throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
-    }
+  if (ipAddress.includes(".")) {
+    return ipAddress.replace(/\.\d+$/, ".0");
+  }
 
-    assertActiveAccount(account);
-    return { account: toAccountDto(account) };
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-    throw new AppError(401, "UNAUTHENTICATED", "Authentication required");
+  return ipAddress.replace(/:[^:]+$/, ":****");
+}
+
+async function listAccountSessions(accessToken?: string): Promise<{ sessions: SafeSessionDto[] }> {
+  const context = await getAuthenticatedContext(accessToken);
+  await assertSessionActive(context.sessionId, context.account.id);
+  const sessions = await listSessionsForAccount(context.account.id);
+
+  return {
+    sessions: sessions.map((session) => ({
+      ...session,
+      ipAddress: maskIpAddress(session.ipAddress),
+      current: session.id === context.sessionId,
+    })),
+  };
+}
+
+async function revokeAccountSession(input: { accessToken?: string; sessionId: string }): Promise<{ revoked: true }> {
+  const context = await getAuthenticatedContext(input.accessToken);
+  await assertSessionActive(context.sessionId, context.account.id);
+  await revokeSessionForAccount({
+    accountId: context.account.id,
+    sessionId: input.sessionId,
+    revokedAt: new Date(),
+  });
+  await createAuthAuditLog({ action: "SESSION_REVOKED", accountId: context.account.id, sessionId: input.sessionId });
+
+  return { revoked: true };
+}
+
+async function logoutAll(accessToken?: string): Promise<{ loggedOut: true }> {
+  const context = await getAuthenticatedContext(accessToken);
+  await assertSessionActive(context.sessionId, context.account.id);
+  await revokeActiveSessionsForAccount(context.account.id, new Date());
+  await createAuthAuditLog({ action: "LOGOUT_ALL", accountId: context.account.id, sessionId: context.sessionId });
+  return { loggedOut: true };
+}
+
+async function assertSessionActive(sessionId: string, accountId: string): Promise<void> {
+  const session = await findSessionById(sessionId);
+  if (!session || session.accountId !== accountId || session.status !== "active" || session.expiresAt.getTime() <= Date.now()) {
+    throw new AppError(401, "SESSION_NOT_ACTIVE", "Session is not active");
   }
 }
 
@@ -357,10 +479,13 @@ export {
   type RegisterResult,
   forgotPassword,
   getCurrentAccount,
+  listAccountSessions,
   login,
   logout,
+  logoutAll,
   refresh,
   register,
+  revokeAccountSession,
   resetPassword,
   verifyEmail,
 };

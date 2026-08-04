@@ -25,7 +25,11 @@ enum AuditAction {
   LOGIN_SUCCESS
   LOGIN_FAILED
   TOKEN_REFRESHED
+  REFRESH_TOKEN_REUSED
   LOGOUT
+  LOGOUT_ALL
+  SESSION_REVOKED
+  RESET_PASSWORD_SUCCESS
   ACCOUNT_CREATED
   ROLE_ASSIGNED
 }
@@ -131,6 +135,7 @@ model AccountToken {
 model Session {
   id                   String        @id @default(uuid())
   accountId            String        @map("account_id")
+  familyId             String        @map("family_id")
   refreshTokenHash     String        @unique @map("refresh_token_hash")
   status               SessionStatus @default(active)
   expiresAt            DateTime      @map("expires_at")
@@ -147,6 +152,7 @@ model Session {
   rotatedTo   Session[] @relation("SessionRotation")
 
   @@index([accountId, status])
+  @@index([familyId, status])
   @@index([refreshTokenHash, status])
   @@index([expiresAt])
   @@map("sessions")

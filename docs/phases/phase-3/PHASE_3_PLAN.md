@@ -14,7 +14,7 @@
 - Test Executed: NO for Phase 3
 - Next Exact Action: Implement P3-001 organization/membership model reconciliation based on Phase 2 account identity; do not start P3-002.
 - Latest Pre-Phase-3 Cleanup: legacy `User`/`UserRole`/`RefreshToken` scaffold removed from Prisma runtime; `USER_CREATED` audit action renamed; Phase 3 now starts from `Account` + remaining `Tenant`/`Role` scaffold.
-- Latest Phase 2 Closure: register now creates pending account; SMTP-backed email verification, forgot/reset password, and `/auth/me` are implemented and verified.
+- Latest Phase 2 Closure: hybrid auth is hardened with memory-only access token, HttpOnly rotating refresh cookie, session family reuse revocation, session management, origin/CORS guard, and audit actions; full API test passed 15 files / 42 tests.
 
 ## Source Basis
 
@@ -33,9 +33,9 @@
 ## Latest Session Log
 
 - Time: 2026-08-03 Asia/Ho_Chi_Minh
-- Runtime Code Changed: YES — Phase 2 auth UI production polish completed.
-- Test Executed: YES — web typecheck/lint/build pass.
-- Task Completed: Phase 2 auth UI production polish.
+- Runtime Code Changed: YES — Phase 2 hybrid auth security refactor completed.
+- Test Executed: YES — `db:validate`, API/web typecheck, API/web lint, API/web build, full API test pass.
+- Task Completed: P2-HOTFIX — Hybrid auth security refactor.
 - Current Task: P3-001 — Organization/membership model reconciliation.
 - Next Exact Action: Implement P3-001 organization/membership model reconciliation based on Phase 2 account identity; do not start P3-002.
 

@@ -1,8 +1,4 @@
-import type {
-  AccountTokenPurpose,
-  AccountStatus,
-  Prisma,
-} from "../../generated/prisma/client";
+import type { AccountStatus, AccountTokenPurpose, AuditAction, Prisma } from "../../generated/prisma/client";
 import { prisma } from "../../database/prisma";
 
 type AuthDbClient = typeof prisma | Prisma.TransactionClient;
@@ -57,6 +53,29 @@ function updateLastLoginAt(accountId: string, now = new Date()) {
   });
 }
 
+function createAuthAuditLog(input: {
+  action: AuditAction;
+  accountId?: string;
+  sessionId?: string;
+  familyId?: string;
+  reason?: string;
+  db?: AuthDbClient;
+}) {
+  return getAuthDb(input.db).auditLog.create({
+    data: {
+      action: input.action,
+      resource: input.sessionId ? "session" : "account",
+      resourceId: input.sessionId ?? input.accountId ?? null,
+      metadata: {
+        ...(input.accountId ? { accountId: input.accountId } : {}),
+        ...(input.sessionId ? { sessionId: input.sessionId } : {}),
+        ...(input.familyId ? { familyId: input.familyId } : {}),
+        ...(input.reason ? { reason: input.reason } : {}),
+      },
+    },
+  });
+}
+
 function updateAccountPassword(input: {
   accountId: string;
   passwordHash: string;
@@ -74,6 +93,7 @@ function updateAccountPassword(input: {
 
 function createSession(input: {
   accountId: string;
+  familyId: string;
   refreshTokenHash: string;
   expiresAt: Date;
   userAgent?: string;
@@ -84,6 +104,7 @@ function createSession(input: {
   return getAuthDb(input.db).session.create({
     data: {
       accountId: input.accountId,
+      familyId: input.familyId,
       refreshTokenHash: input.refreshTokenHash,
       expiresAt: input.expiresAt,
       ...(input.userAgent ? { userAgent: input.userAgent } : {}),
@@ -92,6 +113,13 @@ function createSession(input: {
         ? { rotatedFromSessionId: input.rotatedFromSessionId }
         : {}),
     },
+  });
+}
+
+function findSessionById(id: string, db?: AuthDbClient) {
+  return getAuthDb(db).session.findUnique({
+    where: { id },
+    include: { account: true },
   });
 }
 
@@ -110,6 +138,23 @@ function markSessionRevoked(id: string, revokedAt: Date, db?: AuthDbClient) {
     where: { id },
     data: { status: "revoked", revokedAt },
   });
+}
+
+async function consumeActiveSession(input: {
+  id: string;
+  now: Date;
+  db?: AuthDbClient;
+}): Promise<number> {
+  const result = await getAuthDb(input.db).session.updateMany({
+    where: {
+      id: input.id,
+      status: "active",
+      expiresAt: { gt: input.now },
+    },
+    data: { status: "revoked", revokedAt: input.now },
+  });
+
+  return result.count;
 }
 
 function markSessionExpired(id: string, db?: AuthDbClient) {
@@ -135,6 +180,53 @@ function revokeActiveSessionsForAccount(
     where: { accountId, status: "active" },
     data: { status: "revoked", revokedAt },
   });
+}
+
+function revokeActiveSessionsForFamily(
+  familyId: string,
+  revokedAt: Date,
+  db?: AuthDbClient,
+) {
+  return getAuthDb(db).session.updateMany({
+    where: { familyId, status: "active" },
+    data: { status: "revoked", revokedAt },
+  });
+}
+
+function listSessionsForAccount(accountId: string) {
+  return prisma.session.findMany({
+    where: { accountId },
+    select: {
+      id: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
+      expiresAt: true,
+      revokedAt: true,
+      reusedAt: true,
+      userAgent: true,
+      ipAddress: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+async function revokeSessionForAccount(input: {
+  accountId: string;
+  sessionId: string;
+  revokedAt: Date;
+  db?: AuthDbClient;
+}): Promise<number> {
+  const result = await getAuthDb(input.db).session.updateMany({
+    where: {
+      id: input.sessionId,
+      accountId: input.accountId,
+      status: "active",
+    },
+    data: { status: "revoked", revokedAt: input.revokedAt },
+  });
+
+  return result.count;
 }
 
 function markEmailVerified(
@@ -218,13 +310,17 @@ function runAuthTransaction<T>(
 
 export {
   type AuthDbClient,
+  createAuthAuditLog,
   createAccountWithPassword,
   createSession,
   createStoredAccountToken,
+  consumeActiveSession,
   findAccountByEmail,
   findAccountById,
   findAccountTokenByHash,
+  findSessionById,
   findSessionByRefreshTokenHash,
+  listSessionsForAccount,
   markAccountTokenConsumed,
   markAccountTokenExpired,
   markEmailVerified,
@@ -233,6 +329,8 @@ export {
   markSessionRevoked,
   normalizeEmail,
   revokeActiveSessionsForAccount,
+  revokeActiveSessionsForFamily,
+  revokeSessionForAccount,
   revokeStoredAccountTokens,
   runAuthTransaction,
   updateAccountPassword,

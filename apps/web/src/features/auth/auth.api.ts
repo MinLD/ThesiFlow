@@ -1,4 +1,6 @@
-import { apiPost } from "../../lib/apiClient";
+"use client";
+
+import { apiDelete, apiGet, apiPost } from "../../lib/apiClient";
 
 export type ApiSuccessResponse<T> = {
   success: true;
@@ -27,6 +29,19 @@ export type RegisterResponse = {
   verificationToken?: string;
 };
 
+export type SafeSession = {
+  id: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  expiresAt: string;
+  revokedAt: string | null;
+  reusedAt: string | null;
+  userAgent: string | null;
+  ipAddress: string | null;
+  current: boolean;
+};
+
 export function registerAccount(input: { email: string; fullName: string; password: string }) {
   return apiPost<ApiSuccessResponse<RegisterResponse>, typeof input>("/auth/register", input);
 }
@@ -53,4 +68,20 @@ export function forgotPassword(input: { email: string }) {
 
 export function resetPassword(input: { token: string; password: string }) {
   return apiPost<ApiSuccessResponse<{ reset: true }>, typeof input>("/auth/reset-password", input);
+}
+
+export function getMe() {
+  return apiGet<ApiSuccessResponse<{ account: AuthAccount }>>("/auth/me");
+}
+
+export function listSessions() {
+  return apiGet<ApiSuccessResponse<{ sessions: SafeSession[] }>>("/auth/sessions");
+}
+
+export function revokeSession(sessionId: string) {
+  return apiDelete<ApiSuccessResponse<{ revoked: true }>>(`/auth/sessions/${sessionId}`);
+}
+
+export function logoutAllSessions() {
+  return apiPost<ApiSuccessResponse<{ loggedOut: true }>, Record<string, never>>("/auth/logout-all");
 }

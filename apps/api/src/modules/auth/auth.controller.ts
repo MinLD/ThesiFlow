@@ -1,14 +1,18 @@
 import type { Request, Response } from "express";
+import { AppError } from "../../common/errors/AppError";
 import { clearRefreshCookie, setRefreshCookie } from "../../common/auth/cookie";
 import { env } from "../../config/env";
 import { sendSuccess } from "../../common/responses/apiResponse";
 import {
   forgotPassword,
   getCurrentAccount,
+  listAccountSessions,
   login,
   logout,
+  logoutAll,
   refresh,
   register,
+  revokeAccountSession,
   resetPassword,
   verifyEmail,
 } from "./auth.service";
@@ -56,6 +60,11 @@ function getBearerToken(req: Request): string | undefined {
   return authorization.slice("Bearer ".length).trim() || undefined;
 }
 
+function setAuthNoStore(res: Response): void {
+  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Pragma", "no-cache");
+}
+
 async function registerAccount(req: Request, res: Response): Promise<void> {
   const result = await register(req.body as RegisterInput);
   sendSuccess(res, result, 201);
@@ -64,13 +73,15 @@ async function registerAccount(req: Request, res: Response): Promise<void> {
 async function loginAccount(req: Request, res: Response): Promise<void> {
   const result = await login(req.body as LoginInput, getRequestContext(req));
   setRefreshCookie(res, result.refreshToken);
-  sendSuccess(res, { accessToken: result.accessToken });
+  setAuthNoStore(res);
+  sendSuccess(res, { account: result.account, accessToken: result.accessToken });
 }
 
 async function refreshSession(req: Request, res: Response): Promise<void> {
   const token = getRefreshToken(req);
   const result = await refresh(token ?? "", getRequestContext(req));
   setRefreshCookie(res, result.refreshToken);
+  setAuthNoStore(res);
   sendSuccess(res, {
     account: result.account,
     accessToken: result.accessToken,
@@ -105,13 +116,40 @@ async function getMe(req: Request, res: Response): Promise<void> {
   sendSuccess(res, await getCurrentAccount(getBearerToken(req)));
 }
 
+async function getSessions(req: Request, res: Response): Promise<void> {
+  sendSuccess(res, await listAccountSessions(getBearerToken(req)));
+}
+
+async function revokeSession(req: Request, res: Response): Promise<void> {
+  const sessionIdParam = req.params.sessionId;
+  const sessionId = Array.isArray(sessionIdParam) ? sessionIdParam[0] : sessionIdParam;
+  if (!sessionId) {
+    throw new AppError(400, "SESSION_ID_REQUIRED", "Session id is required");
+  }
+
+  const accessToken = getBearerToken(req);
+  sendSuccess(res, await revokeAccountSession({
+    ...(accessToken ? { accessToken } : {}),
+    sessionId,
+  }));
+}
+
+async function logoutAllSessions(req: Request, res: Response): Promise<void> {
+  await logoutAll(getBearerToken(req));
+  clearRefreshCookie(res);
+  sendSuccess(res, { loggedOut: true });
+}
+
 export {
   forgotAccountPassword,
   getMe,
+  getSessions,
   loginAccount,
   logoutAccount,
+  logoutAllSessions,
   refreshSession,
   registerAccount,
+  revokeSession,
   resetAccountPassword,
   verifyEmailAccount,
 };

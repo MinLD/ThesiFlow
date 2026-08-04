@@ -9,11 +9,12 @@
 - Current Phase: Phase 2 — Global account authentication
 - Phase Status: DONE
 - Current Task: NONE — Phase 2 complete
-- Last Completed Task: P2-006 — SMTP-backed email verification and password reset
+- Last Completed Task: P2-HOTFIX — Hybrid auth security refactor
 - Runtime Applied: YES for P2-001/P2-006
 - Test Executed: YES for Phase 2
 - Next Exact Action: Continue Phase 3 P3-001 in `docs/phases/phase-3/PHASE_3_PLAN.md`.
 - Latest Cleanup: legacy `User`/`UserRole`/`RefreshToken` Prisma scaffold removed; `USER_CREATED` audit action renamed; seed now creates global `Account`.
+- Latest Security Hardening: memory-only JWT access token, rotating opaque refresh cookie, atomic session consume, session family reuse revocation, origin/CORS guard, session management endpoints, auth audit actions.
 
 ## Source Basis
 
@@ -29,13 +30,14 @@
 | P2-004 | Session cookie/security tests | DONE | YES | PASS | VERIFIED |
 | P2-005 | Minimal auth UI draft | DONE | YES | PASS | VERIFIED |
 | P2-006 | Email verification, password reset, `/auth/me` closure | DONE | YES | PASS | VERIFIED |
+| P2-HOTFIX | Hybrid auth security hardening | DONE | YES | PASS | VERIFIED |
 
 ## Latest Session Log
 
 - Time: 2026-08-03 Asia/Ho_Chi_Minh
-- Runtime Code Changed: YES — upgraded Phase 2 web auth UI to production-style login/register surface.
-- Test Executed: YES — web typecheck/lint/build PASS.
-- Task Completed: Phase 2 auth UI production polish.
+- Runtime Code Changed: YES — hardened Phase 2 hybrid authentication and frontend memory-token lifecycle.
+- Test Executed: YES — `db:validate`, API/web typecheck, API/web lint, API/web build, full API test PASS 15 files / 42 tests.
+- Task Completed: P2-HOTFIX — Hybrid auth security refactor.
 - Current Task: Phase 3 P3-001 — Organization/membership model reconciliation.
 - Next Exact Action: Continue Phase 3 P3-001 in `docs/phases/phase-3/PHASE_3_PLAN.md`.
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { forgotPassword, loginAccount, logoutAccount, registerAccount, type AuthAccount } from "./auth.api";
+import { useAuth } from "./AuthProvider";
 
 type Mode = "login" | "register";
 
@@ -15,11 +15,11 @@ export function AuthPanel() {
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
-  const [account, setAccount] = useState<AuthAccount | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isForgotSubmitting, setIsForgotSubmitting] = useState(false);
+  const auth = useAuth();
 
   function switchMode(nextMode: Mode) {
     setMode(nextMode);
@@ -36,15 +36,14 @@ export function AuthPanel() {
 
     try {
       if (mode === "register") {
-        await registerAccount({ email, fullName, password });
+        await auth.register({ email, fullName, password });
         setNotice({ type: "success", text: "Đã tạo tài khoản. Vui lòng kiểm tra email để xác minh trước khi đăng nhập." });
         setMode("login");
         setPassword("");
         return;
       }
 
-      const response = await loginAccount({ email, password });
-      setAccount(response.data.account);
+      await auth.login({ email, password });
       setPassword("");
       setNotice({ type: "success", text: "Đăng nhập thành công. Tenant workspace sẽ được mở ở Phase 3." });
     } catch (submitError) {
@@ -65,7 +64,7 @@ export function AuthPanel() {
     setIsForgotSubmitting(true);
 
     try {
-      await forgotPassword({ email });
+      await auth.forgotPassword({ email });
       setNotice({ type: "info", text: "Nếu email tồn tại, hệ thống đã gửi link đặt lại mật khẩu." });
     } catch (forgotError) {
       setError(forgotError instanceof Error ? forgotError.message : "Không thể gửi yêu cầu đặt lại mật khẩu.");
@@ -77,13 +76,23 @@ export function AuthPanel() {
   async function logout() {
     setError(null);
     setNotice(null);
-    await logoutAccount().catch((logoutError) => {
+    await auth.logout().catch((logoutError) => {
       setError(logoutError instanceof Error ? logoutError.message : "Không thể đăng xuất.");
     });
-    setAccount(null);
   }
 
-  if (account) {
+  if (auth.state.status === "loading") {
+    return (
+      <section className="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-xl shadow-slate-950/5 backdrop-blur">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">ThesiFlow Access</p>
+        <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-950">Đang khôi phục phiên đăng nhập</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-600">Hệ thống đang kiểm tra refresh session an toàn qua HttpOnly cookie.</p>
+      </section>
+    );
+  }
+
+  if (auth.state.status === "authenticated") {
+    const { account } = auth.state;
     return (
       <section className="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-xl shadow-slate-950/5 backdrop-blur">
         <div className="flex items-start justify-between gap-4">

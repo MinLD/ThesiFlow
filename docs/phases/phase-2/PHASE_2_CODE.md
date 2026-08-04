@@ -7,9 +7,9 @@
 ## Current Progress
 
 - Current Batch: Phase 3 / P3-001
-- Last Completed Batch: P2-005 — Minimal auth UI draft
-- Runtime Applied: YES for P2-001/P2-005
-- Test Executed: YES — API typecheck/lint/db validate, P2-004 security test, web typecheck/lint/build PASS
+- Last Completed Batch: P2-HOTFIX — Hybrid auth security refactor
+- Runtime Applied: YES for P2-001/P2-006 and P2-HOTFIX
+- Test Executed: YES — db validate, API/web typecheck, API/web lint, API/web build, full API test PASS 15 files / 42 tests
 - Scope Cleanup: `account_credentials` has no credential type discriminator; OAuth/SSO remains forbidden scope
 - Next Exact Action: Read `docs/phases/phase-3/PHASE_3_PLAN.md`, then implement P3-001 organization/membership model reconciliation; do not start Phase 4.
 
@@ -2141,3 +2141,53 @@ Email provider thật chưa thêm. Hiện dùng dev/test token response; thêm m
 - Runtime Applied: YES.
 - Validation: web typecheck/lint/build PASS.
 - Ops: stopped `thesiflow-web` Docker container to free port `3000`.
+
+### Hybrid auth security refactor 2026-08-03
+
+- Status: VERIFIED
+- Runtime Applied: YES
+- Code Status: IMPLEMENTED
+- Task ID: P2-HOTFIX
+- Target files changed:
+  - `apps/api/prisma/schema.prisma`
+  - `apps/api/prisma/migrations/20260803143000_add_session_family_id/migration.sql`
+  - `apps/api/prisma/migrations/20260803145500_add_auth_audit_actions/migration.sql`
+  - `apps/api/src/common/middleware/security.ts`
+  - `apps/api/src/modules/auth/auth.controller.ts`
+  - `apps/api/src/modules/auth/auth.repository.ts`
+  - `apps/api/src/modules/auth/auth.routes.ts`
+  - `apps/api/src/modules/auth/auth.service.ts`
+  - `apps/web/src/features/auth/accessTokenStore.ts`
+  - `apps/web/src/features/auth/AuthProvider.tsx`
+  - `apps/web/src/features/auth/auth.api.ts`
+  - `apps/web/src/lib/apiClient.ts`
+  - `apps/web/src/app/providers.tsx`
+  - `apps/web/src/features/auth/AuthPanel.tsx`
+  - `apps/api/tests/auth/account-lifecycle.test.ts`
+  - `apps/api/tests/auth/session-security.test.ts`
+  - `apps/api/tests/auth/frontend-auth-boundary.test.ts`
+- Implemented:
+  - Login/refresh response now returns `{ account, accessToken }`; refresh token remains HttpOnly cookie only.
+  - Access token is memory-only on frontend via `accessTokenStore`; no storage API use.
+  - API client centralizes GET/POST/PUT/PATCH/DELETE, attaches Bearer token, uses `credentials: "include"`, performs single-flight refresh, retries once, emits auth-expired on refresh failure.
+  - Auth Provider bootstraps session once after reload through `/auth/refresh` and owns loading/authenticated/unauthenticated state.
+  - Refresh rotation uses conditional `updateMany` consume to prevent two child sessions from one refresh token.
+  - `Session.familyId` added; refresh reuse revokes active sessions in same family.
+  - Session management endpoints added: `GET /auth/sessions`, `DELETE /auth/sessions/:sessionId`, `POST /auth/logout-all`.
+  - Origin/CORS guard returns explicit 403 for untrusted origin; cookie-backed auth mutations require trusted browser origin.
+  - Auth audit actions persisted for login success/failure, refresh success, refresh reuse, logout, logout-all, session revoke, reset password.
+- Security policy:
+  - Policy A chosen: short-lived stateless JWT access token; logout has bounded revocation window until access token expiry.
+  - Sensitive session-management endpoints verify `sessionId` is still active.
+  - Refresh cookie remains `HttpOnly`, `SameSite=Lax`, production `secure`, `Path=/auth`, no `Domain`.
+- Validation:
+  - `npm run db:migrate -- --name add_auth_audit_actions` PASS.
+  - `npm run db:validate` PASS.
+  - `npm run typecheck --workspace apps/api` PASS.
+  - `npm run lint --workspace apps/api` PASS.
+  - `npm run typecheck --workspace apps/web` PASS.
+  - `npm run lint --workspace apps/web` PASS.
+  - `npm run build --workspace apps/api` PASS.
+  - `npm run build --workspace apps/web` PASS.
+  - `DATABASE_URL=postgresql://thesiflow:12345678@localhost:5433/thesiflow?schema=public npm run test --workspace apps/api` PASS — 15 files / 42 tests.
+- Next Action: Continue Phase 3 P3-001; do not re-open Phase 2 unless a new auth bug is reported.

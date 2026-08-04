@@ -31,7 +31,7 @@ export default function HomePage() {
             ))}
           </div>
           <div className="mt-10 grid gap-4 sm:grid-cols-3">
-            <Metric label="Current phase" value="Phase 2" />
+            <Metric label="Current phase" value="Phase 3" />
             <Metric label="Auth model" value="Global" />
             <Metric label="Architecture" value="Modular" />
           </div>
