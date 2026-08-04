@@ -46,62 +46,19 @@ import type {
 } from "./auth.schemas";
 import { env } from "../../config/env";
 import { sendEmailVerificationMail, sendPasswordResetMail } from "../../common/mail/mailer";
+import type {
+  AccountDto,
+  AuthTokenResultDto,
+  RegisterResponseDto,
+  SafeSessionDto,
+  TokenRequestResponseDto,
+} from "./auth.dto";
+import { toAccountDto, toSafeSessionDto } from "./auth.mapper";
 
 type RequestContext = {
   userAgent?: string;
   ipAddress?: string;
 };
-
-type AccountDto = {
-  id: string;
-  email: string;
-  fullName: string;
-  status: string;
-};
-
-type AuthResult = {
-  account: AccountDto;
-  accessToken: string;
-  refreshToken: string;
-  sessionId: string;
-};
-
-type SafeSessionDto = {
-  id: string;
-  status: string;
-  createdAt: Date;
-  updatedAt: Date;
-  expiresAt: Date;
-  revokedAt: Date | null;
-  reusedAt: Date | null;
-  userAgent: string | null;
-  ipAddress: string | null;
-  current: boolean;
-};
-
-type RegisterResult = {
-  account: AccountDto;
-  verificationToken?: string;
-};
-
-type TokenRequestResult = {
-  requested: true;
-  resetToken?: string;
-};
-
-function toAccountDto(account: {
-  id: string;
-  email: string;
-  fullName: string;
-  status: string;
-}): AccountDto {
-  return {
-    id: account.id,
-    email: account.email,
-    fullName: account.fullName,
-    status: account.status,
-  };
-}
 
 function assertActiveAccount(account: { status: string }): void {
   if (account.status === "disabled") {
@@ -118,7 +75,7 @@ async function createSessionTokens(
   context: RequestContext,
   rotatedFromSessionId?: string,
   familyId = randomUUID(),
-): Promise<AuthResult> {
+): Promise<AuthTokenResultDto> {
   const refreshToken = createOpaqueRefreshToken();
   const session = await createSession({
     accountId: account.id,
@@ -146,7 +103,7 @@ function exposeDevToken(token: string): string | undefined {
   return env.NODE_ENV === "production" ? undefined : token;
 }
 
-async function register(input: RegisterInput): Promise<RegisterResult> {
+async function register(input: RegisterInput): Promise<RegisterResponseDto> {
   const existingAccount = await findAccountByEmail(input.email);
   if (existingAccount) {
     throw new AppError(
@@ -208,7 +165,7 @@ async function verifyEmail(
 async function login(
   input: LoginInput,
   context: RequestContext,
-): Promise<AuthResult> {
+): Promise<AuthTokenResultDto> {
   const account = await findAccountByEmail(input.email);
   const passwordCredential = account?.credentials[0];
 
@@ -237,7 +194,7 @@ async function login(
 async function refresh(
   refreshToken: string,
   context: RequestContext,
-): Promise<AuthResult> {
+): Promise<AuthTokenResultDto> {
   const now = new Date();
   const session = await findSessionByRefreshTokenHash(
     hashRefreshToken(refreshToken),
@@ -356,7 +313,7 @@ async function getAuthenticatedContext(accessToken?: string): Promise<{
 
 async function forgotPassword(
   input: ForgotPasswordInput,
-): Promise<TokenRequestResult> {
+): Promise<TokenRequestResponseDto> {
   const account = await findAccountByEmail(input.email);
   if (!account || account.status === "disabled") {
     return { requested: true };
@@ -420,29 +377,13 @@ async function getCurrentAccount(
   return { account: context.account };
 }
 
-function maskIpAddress(ipAddress: string | null): string | null {
-  if (!ipAddress) {
-    return null;
-  }
-
-  if (ipAddress.includes(".")) {
-    return ipAddress.replace(/\.\d+$/, ".0");
-  }
-
-  return ipAddress.replace(/:[^:]+$/, ":****");
-}
-
 async function listAccountSessions(accessToken?: string): Promise<{ sessions: SafeSessionDto[] }> {
   const context = await getAuthenticatedContext(accessToken);
   await assertSessionActive(context.sessionId, context.account.id);
   const sessions = await listSessionsForAccount(context.account.id);
 
   return {
-    sessions: sessions.map((session) => ({
-      ...session,
-      ipAddress: maskIpAddress(session.ipAddress),
-      current: session.id === context.sessionId,
-    })),
+    sessions: sessions.map((session) => toSafeSessionDto(session, context.sessionId)),
   };
 }
 
@@ -475,8 +416,6 @@ async function assertSessionActive(sessionId: string, accountId: string): Promis
 }
 
 export {
-  type AuthResult,
-  type RegisterResult,
   forgotPassword,
   getCurrentAccount,
   listAccountSessions,

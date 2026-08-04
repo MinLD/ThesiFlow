@@ -23,6 +23,7 @@ import type {
   ResetPasswordInput,
   VerifyEmailInput,
 } from "./auth.schemas";
+import { toAuthResponseDto } from "./auth.mapper";
 
 function getRequestContext(req: Request) {
   const context: { userAgent?: string; ipAddress?: string } = {};
@@ -74,7 +75,7 @@ async function loginAccount(req: Request, res: Response): Promise<void> {
   const result = await login(req.body as LoginInput, getRequestContext(req));
   setRefreshCookie(res, result.refreshToken);
   setAuthNoStore(res);
-  sendSuccess(res, { account: result.account, accessToken: result.accessToken });
+  sendSuccess(res, toAuthResponseDto(result));
 }
 
 async function refreshSession(req: Request, res: Response): Promise<void> {
@@ -82,10 +83,7 @@ async function refreshSession(req: Request, res: Response): Promise<void> {
   const result = await refresh(token ?? "", getRequestContext(req));
   setRefreshCookie(res, result.refreshToken);
   setAuthNoStore(res);
-  sendSuccess(res, {
-    account: result.account,
-    accessToken: result.accessToken,
-  });
+  sendSuccess(res, toAuthResponseDto(result));
 }
 
 async function logoutAccount(req: Request, res: Response): Promise<void> {

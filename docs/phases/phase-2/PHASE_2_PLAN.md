@@ -9,12 +9,13 @@
 - Current Phase: Phase 2 — Global account authentication
 - Phase Status: DONE
 - Current Task: NONE — Phase 2 complete
-- Last Completed Task: P2-HOTFIX — Hybrid auth security refactor
+- Last Completed Task: P2-HOTFIX — Auth DTO/mapper layering cleanup
 - Runtime Applied: YES for P2-001/P2-006
 - Test Executed: YES for Phase 2
 - Next Exact Action: Continue Phase 3 P3-001 in `docs/phases/phase-3/PHASE_3_PLAN.md`.
 - Latest Cleanup: legacy `User`/`UserRole`/`RefreshToken` Prisma scaffold removed; `USER_CREATED` audit action renamed; seed now creates global `Account`.
 - Latest Security Hardening: memory-only JWT access token, rotating opaque refresh cookie, atomic session consume, session family reuse revocation, origin/CORS guard, session management endpoints, auth audit actions.
+- Latest Layering Cleanup: auth DTO and mapper extracted from service/controller; behavior unchanged.
 
 ## Source Basis
 
@@ -34,10 +35,10 @@
 
 ## Latest Session Log
 
-- Time: 2026-08-03 Asia/Ho_Chi_Minh
-- Runtime Code Changed: YES — hardened Phase 2 hybrid authentication and frontend memory-token lifecycle.
-- Test Executed: YES — `db:validate`, API/web typecheck, API/web lint, API/web build, full API test PASS 15 files / 42 tests.
-- Task Completed: P2-HOTFIX — Hybrid auth security refactor.
+- Time: 2026-08-04 Asia/Ho_Chi_Minh
+- Runtime Code Changed: YES — split Phase 2 auth DTO/mapper from service/controller.
+- Test Executed: YES — API typecheck/lint/build PASS; auth target tests PASS 3 files / 12 tests.
+- Task Completed: P2-HOTFIX — Auth DTO/mapper layering cleanup.
 - Current Task: Phase 3 P3-001 — Organization/membership model reconciliation.
 - Next Exact Action: Continue Phase 3 P3-001 in `docs/phases/phase-3/PHASE_3_PLAN.md`.
 

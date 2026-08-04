@@ -11,7 +11,7 @@
 - Runtime Applied: NO for Phase 3
 - Test Executed: NO for Phase 3
 - Next Exact Action: Implement P3-001 organization/membership model reconciliation based on Phase 2 account identity; do not start P3-002.
-- Latest Non-Phase-3 Change: Phase 2 hybrid auth security refactor completed; Phase 3 runtime still not started.
+- Latest Non-Phase-3 Change: Phase 2 auth DTO/mapper layering cleanup completed; Phase 3 runtime still not started.
 
 ## P3-001 — Organization/membership model reconciliation
 

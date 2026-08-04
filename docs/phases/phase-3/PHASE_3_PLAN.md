@@ -14,7 +14,7 @@
 - Test Executed: NO for Phase 3
 - Next Exact Action: Implement P3-001 organization/membership model reconciliation based on Phase 2 account identity; do not start P3-002.
 - Latest Pre-Phase-3 Cleanup: legacy `User`/`UserRole`/`RefreshToken` scaffold removed from Prisma runtime; `USER_CREATED` audit action renamed; Phase 3 now starts from `Account` + remaining `Tenant`/`Role` scaffold.
-- Latest Phase 2 Closure: hybrid auth is hardened with memory-only access token, HttpOnly rotating refresh cookie, session family reuse revocation, session management, origin/CORS guard, and audit actions; full API test passed 15 files / 42 tests.
+- Latest Phase 2 Closure: hybrid auth is hardened and DTO/mapper layering cleanup completed; auth target tests passed 3 files / 12 tests.
 
 ## Source Basis
 

@@ -2191,3 +2191,26 @@ Email provider thật chưa thêm. Hiện dùng dev/test token response; thêm m
   - `npm run build --workspace apps/web` PASS.
   - `DATABASE_URL=postgresql://thesiflow:12345678@localhost:5433/thesiflow?schema=public npm run test --workspace apps/api` PASS — 15 files / 42 tests.
 - Next Action: Continue Phase 3 P3-001; do not re-open Phase 2 unless a new auth bug is reported.
+
+### Auth DTO/mapper layering cleanup 2026-08-04
+
+- Status: VERIFIED
+- Runtime Applied: YES
+- Code Status: IMPLEMENTED
+- Task ID: P2-HOTFIX
+- Target files changed:
+  - `apps/api/src/modules/auth/auth.dto.ts` — created, central auth response/session DTO types.
+  - `apps/api/src/modules/auth/auth.mapper.ts` — created, `toAccountDto`, `toAuthResponseDto`, `toSafeSessionDto`, `maskIpAddress`.
+  - `apps/api/src/modules/auth/auth.service.ts` — removed inline DTO definitions and mapper logic.
+  - `apps/api/src/modules/auth/auth.controller.ts` — uses `toAuthResponseDto` for login/refresh response shaping.
+- Implemented:
+  - Service keeps auth behavior/application flow.
+  - Mapper owns outward response shape.
+  - DTO file owns API-facing auth types.
+  - No NestJS DTO class, no new abstraction beyond one mapper module.
+- Validation:
+  - `npm run typecheck --workspace apps/api` PASS.
+  - `npm run lint --workspace apps/api` PASS.
+  - `npm run build --workspace apps/api` PASS.
+  - `DATABASE_URL=postgresql://thesiflow:12345678@localhost:5433/thesiflow?schema=public npm run test --workspace apps/api -- auth/account-lifecycle.test.ts auth/session-security.test.ts auth/frontend-auth-boundary.test.ts` PASS — 3 files / 12 tests.
+- Next Action: Continue Phase 3 P3-001; do not re-open Phase 2 unless a new auth bug is reported.
