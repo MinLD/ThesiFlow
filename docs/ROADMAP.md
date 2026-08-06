@@ -18,12 +18,12 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 - Current Phase Status: IN_PROGRESS
 - Current Task: P3-001-B — Runtime/domain reconciliation if required after DB pass
 - Last Completed Task: P3-001-A — Organization/membership database reconciliation
-- Next Exact Action: Review runtime/domain needs after P3-001-A DB pass; do not start P3-002 or Phase 4 until P3-001-B is assessed.
+- Next Exact Action: Developer runs P3-001-B boundary checks and submits `docs/training/reports/2026-08-06_P3-001-B_REPORT.md`; do not start P3-002 or Phase 4 until P3-001-B is reviewed.
 - Official Daily Status Source: `docs/ROADMAP.md`
 - Current Phase Plan: `docs/phases/phase-3/PHASE_3_PLAN.md`
 - Current Phase Code Drafts: `docs/phases/phase-3/PHASE_3_CODE.md`
-- Runtime Code Changed In Latest Session: YES — P3-001-A schema, migration, seed and generated Prisma client reconciled to Organization/Membership/Invitation contract
-- Test Executed In Latest Session: YES — `npm run db:validate`; root `lint`; root `typecheck`; full API `test` 16 files / 46 tests PASS; root `build` PASS
+- Runtime Code Changed In Latest Session: NO — P3-001-B boundary test/docs only after P3-001-A commit `c54c2b9`
+- Test Executed In Latest Session: YES — P3-001-B boundary test PASS 1 file / 2 tests; API lint PASS
 
 ## Source References
 
@@ -75,15 +75,15 @@ Khi Phase 1 hoàn thành: đặt Phase 1 = DONE, Phase 2 = IN_PROGRESS, tạo `d
 - Current Task: P3-001 — Organization/membership model reconciliation.
 - Runtime Applied: YES for P2-001/P2-006; NO for Phase 3.
 - Test Executed: YES — API/worker typecheck; API/worker lint; API/worker build; `DATABASE_URL=... npm run test --workspace apps/api -- auth/account-lifecycle.test.ts auth/session-security.test.ts auth/frontend-auth-boundary.test.ts outboxRepository.test.ts` PASS 4 files / 13 tests.
-- Next Exact Action: Developer applies P3-001-A database contract from `docs/training/database-specs/2026-08-06_P3-001-A_DATABASE.md`, then makes `apps/api/tests/tenancy/organization-membership-reconciliation.test.ts` pass; do not start P3-002 or Phase 4.
+- Historical Next Action At That Time: Developer applied P3-001-A database contract before moving to P3-001-B.
 
 - Time: 2026-08-06 Asia/Ho_Chi_Minh
 - Executor: Codex CLI
-- Work Performed: Applied P3-001-A database contract for `organizations`, `tenant_memberships`, `membership_invitations`; renamed role/audit tenant references to organization references; updated seed and generated Prisma client.
-- Runtime Code Changed: YES — Prisma schema, Phase 3 migration, seed, generated client and adapter-aware test helper updated.
+- Work Performed: Committed P3-001-A database reconciliation as `c54c2b9`; prepared P3-001-B runtime/domain boundary assessment task and test.
+- Runtime Code Changed: NO for P3-001-B — only `.gitignore`, test and documentation changed after the P3-001-A commit.
 - Files Deleted: NONE.
 - Task Completed: P3-001-A — Organization/membership database reconciliation.
 - Current Task: P3-001-B — Runtime/domain reconciliation if required after DB pass.
 - Runtime Applied: YES for P3-001-A.
-- Test Executed: YES — `npm run db:validate`; `DATABASE_URL=postgresql://thesiflow:12345678@localhost:5433/thesiflow?schema=public npm run test --workspace apps/api -- tenancy/organization-membership-reconciliation.test.ts` PASS 1 file / 4 tests; root `npm run lint`; root `npm run typecheck`; full API `npm run test` PASS 16 files / 46 tests; root `npm run build` PASS.
-- Next Exact Action: Review P3-001-B runtime/domain reconciliation needs; do not start P3-002 or Phase 4.
+- Test Executed: YES — `npm run test --workspace apps/api -- tenancy/runtime-reconciliation-boundary.test.ts` PASS 1 file / 2 tests; `npm run lint --workspace apps/api` PASS.
+- Next Exact Action: Developer runs P3-001-B boundary checks and submits `docs/training/reports/2026-08-06_P3-001-B_REPORT.md`; do not start P3-002 or Phase 4 until P3-001-B is reviewed.

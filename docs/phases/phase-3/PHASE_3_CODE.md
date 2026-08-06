@@ -9,9 +9,9 @@
 - Current Batch: P3-001-B
 - Last Completed Batch: P3-001-A — Organization/membership database reconciliation
 - Runtime Applied: YES for P3-001-A
-- Test Executed: YES — P3-001-A target/full checks pass
-- Next Exact Action: Review P3-001-B runtime/domain reconciliation needs; do not start P3-002.
-- Latest Runtime Change: P3-001-A database reconciliation applied; no P3 API/frontend implementation started.
+- Test Executed: YES — P3-001-B boundary test pass
+- Next Exact Action: Developer runs P3-001-B commands and submits report; do not start P3-002.
+- Latest Runtime Change: P3-001-A database reconciliation applied; P3-001-B adds only boundary test/docs.
 
 ## P3-001 — Organization/membership model reconciliation
 
@@ -45,3 +45,24 @@ Applied runtime files:
 - `apps/api/src/generated/prisma/` — regenerated from reconciled schema.
 
 Verification: `npm run db:validate`; target tenancy test PASS 1 file / 4 tests; root `npm run lint`; root `npm run typecheck`; full API `npm run test` PASS 16 files / 46 tests; root `npm run build` PASS.
+
+## P3-001-B — Runtime/domain reconciliation assessment
+
+### Status
+
+DRAFTED
+
+### Runtime Applied
+
+NO
+
+### Target Files
+
+- `apps/api/tests/tenancy/runtime-reconciliation-boundary.test.ts`
+- `docs/training/tasks/2026-08-06_P3-001-B.md`
+
+### Code
+
+AI-created boundary test verifies checked runtime source/seed do not use legacy tenant access and `app.ts` does not expose organization routes before P3-002.
+
+Verification: `npm run test --workspace apps/api -- tenancy/runtime-reconciliation-boundary.test.ts` PASS 1 file / 2 tests; `npm run lint --workspace apps/api` PASS.

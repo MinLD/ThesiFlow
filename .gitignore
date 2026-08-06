@@ -21,7 +21,7 @@ out/
 apps/api/tests/*
 !apps/api/tests/tenancy/
 apps/api/tests/tenancy/*
-!apps/api/tests/tenancy/organization-membership-reconciliation.test.ts
+!apps/api/tests/tenancy/*.test.ts
 coverage/
 **/coverage/
 test-results/
