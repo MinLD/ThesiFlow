@@ -21,6 +21,7 @@ import {
   createAuthAuditLog,
   createSession,
   consumeActiveSession,
+  enqueueAuthMail,
   findAccountByEmail,
   findAccountById,
   findSessionById,
@@ -45,7 +46,7 @@ import type {
   VerifyEmailInput,
 } from "./auth.schemas";
 import { env } from "../../config/env";
-import { sendEmailVerificationMail, sendPasswordResetMail } from "../../common/mail/mailer";
+import { buildEmailVerificationMail, buildPasswordResetMail } from "../../common/mail/mailer";
 import type {
   AccountDto,
   AuthTokenResultDto,
@@ -114,21 +115,32 @@ async function register(input: RegisterInput): Promise<RegisterResponseDto> {
   }
 
   const passwordHash = await hashAccountPassword(input.password);
-  const account = await createAccountWithPassword({
-    email: input.email,
-    fullName: input.fullName,
-    passwordHash,
+  const { account, verification } = await runAuthTransaction(async (db) => {
+    const createdAccount = await createAccountWithPassword({
+      email: input.email,
+      fullName: input.fullName,
+      passwordHash,
+      db,
+    });
+    const createdVerification = await createAccountToken({
+      accountId: createdAccount.id,
+      purpose: "email_verification",
+      db,
+    });
+    await enqueueAuthMail({
+      accountId: createdAccount.id,
+      purpose: "email_verification",
+      mail: buildEmailVerificationMail({
+        to: createdAccount.email,
+        fullName: createdAccount.fullName,
+        token: createdVerification.token,
+      }),
+      db,
+    });
+    await createAuthAuditLog({ action: "ACCOUNT_CREATED", accountId: createdAccount.id, db });
+
+    return { account: createdAccount, verification: createdVerification };
   });
-  const verification = await createAccountToken({
-    accountId: account.id,
-    purpose: "email_verification",
-  });
-  await sendEmailVerificationMail({
-    to: account.email,
-    fullName: account.fullName,
-    token: verification.token,
-  });
-  await createAuthAuditLog({ action: "ACCOUNT_CREATED", accountId: account.id });
 
   return {
     account: toAccountDto(account),
@@ -319,18 +331,29 @@ async function forgotPassword(
     return { requested: true };
   }
 
-  await revokeAccountTokens({
-    accountId: account.id,
-    purpose: "password_reset",
-  });
-  const reset = await createAccountToken({
-    accountId: account.id,
-    purpose: "password_reset",
-  });
-  await sendPasswordResetMail({
-    to: account.email,
-    fullName: account.fullName,
-    token: reset.token,
+  const reset = await runAuthTransaction(async (db) => {
+    await revokeAccountTokens({
+      accountId: account.id,
+      purpose: "password_reset",
+      db,
+    });
+    const createdReset = await createAccountToken({
+      accountId: account.id,
+      purpose: "password_reset",
+      db,
+    });
+    await enqueueAuthMail({
+      accountId: account.id,
+      purpose: "password_reset",
+      mail: buildPasswordResetMail({
+        to: account.email,
+        fullName: account.fullName,
+        token: createdReset.token,
+      }),
+      db,
+    });
+
+    return createdReset;
   });
 
   return {

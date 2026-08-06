@@ -124,9 +124,9 @@ function buildAuthMailHtml(input: AuthMailTemplateInput): string {
 </html>`;
 }
 
-async function sendEmailVerificationMail(input: { to: string; fullName: string; token: string }): Promise<void> {
+function buildEmailVerificationMail(input: { to: string; fullName: string; token: string }): MailInput {
   const url = buildFrontendUrl("/verify-email", input.token);
-  await sendMail({
+  return {
     to: input.to,
     subject: "Xác minh tài khoản ThesiFlow",
     text: `Xin chào ${input.fullName},\n\nMở link sau để xác minh tài khoản ThesiFlow:\n${url}\n\nNếu bạn không tạo tài khoản, hãy bỏ qua email này.`,
@@ -139,12 +139,16 @@ async function sendEmailVerificationMail(input: { to: string; fullName: string; 
       url,
       safetyNote: "Nếu bạn không tạo tài khoản ThesiFlow, hãy bỏ qua email này. Liên kết xác minh chỉ nên được sử dụng bởi chủ sở hữu email.",
     }),
-  });
+  };
 }
 
-async function sendPasswordResetMail(input: { to: string; fullName: string; token: string }): Promise<void> {
+async function sendEmailVerificationMail(input: { to: string; fullName: string; token: string }): Promise<void> {
+  await sendMail(buildEmailVerificationMail(input));
+}
+
+function buildPasswordResetMail(input: { to: string; fullName: string; token: string }): MailInput {
   const url = buildFrontendUrl("/reset-password", input.token);
-  await sendMail({
+  return {
     to: input.to,
     subject: "Đặt lại mật khẩu ThesiFlow",
     text: `Xin chào ${input.fullName},\n\nMở link sau để đặt lại mật khẩu ThesiFlow:\n${url}\n\nNếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này.`,
@@ -157,7 +161,19 @@ async function sendPasswordResetMail(input: { to: string; fullName: string; toke
       url,
       safetyNote: "Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này. Mật khẩu hiện tại của bạn sẽ không thay đổi nếu bạn không mở liên kết.",
     }),
-  });
+  };
 }
 
-export { isMailConfigured, sendEmailVerificationMail, sendPasswordResetMail };
+async function sendPasswordResetMail(input: { to: string; fullName: string; token: string }): Promise<void> {
+  await sendMail(buildPasswordResetMail(input));
+}
+
+export {
+  type MailInput,
+  buildEmailVerificationMail,
+  buildPasswordResetMail,
+  isMailConfigured,
+  sendEmailVerificationMail,
+  sendMail,
+  sendPasswordResetMail,
+};

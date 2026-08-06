@@ -30,8 +30,9 @@ function createAccountWithPassword(input: {
   fullName: string;
   passwordHash: string;
   status?: AccountStatus;
+  db?: AuthDbClient;
 }) {
-  return prisma.account.create({
+  return getAuthDb(input.db).account.create({
     data: {
       email: normalizeEmail(input.email),
       fullName: input.fullName.trim(),
@@ -71,6 +72,30 @@ function createAuthAuditLog(input: {
         ...(input.sessionId ? { sessionId: input.sessionId } : {}),
         ...(input.familyId ? { familyId: input.familyId } : {}),
         ...(input.reason ? { reason: input.reason } : {}),
+      },
+    },
+  });
+}
+
+function enqueueAuthMail(input: {
+  accountId: string;
+  mail: {
+    to: string;
+    subject: string;
+    text: string;
+    html: string;
+  };
+  purpose: "email_verification" | "password_reset";
+  db?: AuthDbClient;
+}) {
+  return getAuthDb(input.db).outboxEvent.create({
+    data: {
+      eventType: "mail.send.v1",
+      aggregateType: "account",
+      aggregateId: input.accountId,
+      payload: {
+        ...input.mail,
+        purpose: input.purpose,
       },
     },
   });
@@ -311,6 +336,7 @@ function runAuthTransaction<T>(
 export {
   type AuthDbClient,
   createAuthAuditLog,
+  enqueueAuthMail,
   createAccountWithPassword,
   createSession,
   createStoredAccountToken,

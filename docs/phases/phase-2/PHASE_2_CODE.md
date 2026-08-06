@@ -2214,3 +2214,35 @@ Email provider thật chưa thêm. Hiện dùng dev/test token response; thêm m
   - `npm run build --workspace apps/api` PASS.
   - `DATABASE_URL=postgresql://thesiflow:12345678@localhost:5433/thesiflow?schema=public npm run test --workspace apps/api -- auth/account-lifecycle.test.ts auth/session-security.test.ts auth/frontend-auth-boundary.test.ts` PASS — 3 files / 12 tests.
 - Next Action: Continue Phase 3 P3-001; do not re-open Phase 2 unless a new auth bug is reported.
+
+### Async auth mail via outbox worker 2026-08-04
+
+- Status: VERIFIED
+- Runtime Applied: YES
+- Code Status: IMPLEMENTED
+- Task ID: P2-HOTFIX
+- Target files changed:
+  - `apps/api/src/common/mail/mailer.ts` — exposes mail builders plus direct sender compatibility.
+  - `apps/api/src/modules/auth/auth.repository.ts` — adds `enqueueAuthMail` outbox helper.
+  - `apps/api/src/modules/auth/auth.service.ts` — register/forgot-password enqueue mail in transaction instead of awaiting SMTP.
+  - `apps/worker/src/index.ts` — claims `mail.send.v1`, sends SMTP, retries failed rows, sanitizes delivered mail payload.
+  - `apps/worker/package.json` — adds `nodemailer` dependency and types.
+  - `package-lock.json` — workspace dependency lock update.
+- Implemented:
+  - API request path no longer waits for Gmail SMTP on register/password reset.
+  - Account token creation and outbox event enqueue happen in the same DB transaction.
+  - Worker loads root `.env`, reuses pooled SMTP transport, marks publish success/failure.
+  - Failed mail events retry with bounded backoff through `available_at`.
+  - Published mail event payload is sanitized so verification/reset token URL is not retained after delivery.
+- Operational note:
+  - Start worker with `npm run dev --workspace apps/worker` during local auth mail testing.
+  - If worker is stopped, register still succeeds and email waits in `outbox_events` with `status='pending'`.
+- Validation:
+  - `npm run typecheck --workspace apps/api` PASS.
+  - `npm run lint --workspace apps/api` PASS.
+  - `npm run typecheck --workspace apps/worker` PASS.
+  - `npm run lint --workspace apps/worker` PASS.
+  - `npm run build --workspace apps/api` PASS.
+  - `npm run build --workspace apps/worker` PASS.
+  - `DATABASE_URL=postgresql://thesiflow:12345678@localhost:5433/thesiflow?schema=public npm run test --workspace apps/api -- auth/account-lifecycle.test.ts auth/session-security.test.ts auth/frontend-auth-boundary.test.ts outboxRepository.test.ts` PASS — 4 files / 13 tests.
+- Next Action: Continue Phase 3 P3-001; do not re-open Phase 2 unless a new auth bug is reported.

@@ -17,13 +17,13 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 - Current Phase: Phase 3 — Organization/Tenant onboarding
 - Current Phase Status: IN_PROGRESS
 - Current Task: P3-001 — Organization/membership model reconciliation
-- Last Completed Task: P2-HOTFIX — Auth DTO/mapper layering cleanup
+- Last Completed Task: P2-HOTFIX — Async auth mail via outbox worker
 - Next Exact Action: Read `docs/phases/phase-3/PHASE_3_PLAN.md`, then implement P3-001 organization/membership model reconciliation; do not start P3-002 or Phase 4.
 - Official Daily Status Source: `docs/ROADMAP.md`
 - Current Phase Plan: `docs/phases/phase-3/PHASE_3_PLAN.md`
 - Current Phase Code Drafts: `docs/phases/phase-3/PHASE_3_CODE.md`
-- Runtime Code Changed In Latest Session: YES — split Phase 2 auth DTO/mapper from service/controller; behavior unchanged
-- Test Executed In Latest Session: YES — API typecheck/lint/build PASS; auth target tests PASS 3 files / 12 tests
+- Runtime Code Changed In Latest Session: YES — auth register/forgot-password now enqueue mail outbox; worker dispatches `mail.send.v1` via SMTP
+- Test Executed In Latest Session: YES — API/worker typecheck/lint/build PASS; auth/outbox target tests PASS 4 files / 13 tests
 
 ## Source References
 
@@ -68,11 +68,11 @@ Khi Phase 1 hoàn thành: đặt Phase 1 = DONE, Phase 2 = IN_PROGRESS, tạo `d
 
 - Time: 2026-08-04 Asia/Ho_Chi_Minh
 - Executor: Codex CLI
-- Work Performed: Split auth DTO and mapper from service/controller.
-- Runtime Code Changed: YES — `apps/api/src/modules/auth/auth.dto.ts`, `apps/api/src/modules/auth/auth.mapper.ts`, `apps/api/src/modules/auth/auth.service.ts`, `apps/api/src/modules/auth/auth.controller.ts`.
+- Work Performed: Moved auth email delivery off API request path into outbox worker.
+- Runtime Code Changed: YES — API auth service enqueues `mail.send.v1`; worker claims outbox rows and sends SMTP with retry.
 - Files Deleted: NONE.
-- Task Completed: P2-HOTFIX — Auth DTO/mapper layering cleanup.
+- Task Completed: P2-HOTFIX — Async auth mail via outbox worker.
 - Current Task: P3-001 — Organization/membership model reconciliation.
 - Runtime Applied: YES for P2-001/P2-006; NO for Phase 3.
-- Test Executed: YES — `npm run typecheck --workspace apps/api`; `npm run lint --workspace apps/api`; `npm run build --workspace apps/api`; `DATABASE_URL=... npm run test --workspace apps/api -- auth/account-lifecycle.test.ts auth/session-security.test.ts auth/frontend-auth-boundary.test.ts` PASS 3 files / 12 tests.
+- Test Executed: YES — API/worker typecheck; API/worker lint; API/worker build; `DATABASE_URL=... npm run test --workspace apps/api -- auth/account-lifecycle.test.ts auth/session-security.test.ts auth/frontend-auth-boundary.test.ts outboxRepository.test.ts` PASS 4 files / 13 tests.
 - Next Exact Action: Read `docs/phases/phase-3/PHASE_3_PLAN.md`, then implement P3-001 organization/membership model reconciliation; do not start P3-002 or Phase 4.

@@ -9,13 +9,14 @@
 - Current Phase: Phase 2 — Global account authentication
 - Phase Status: DONE
 - Current Task: NONE — Phase 2 complete
-- Last Completed Task: P2-HOTFIX — Auth DTO/mapper layering cleanup
+- Last Completed Task: P2-HOTFIX — Async auth mail via outbox worker
 - Runtime Applied: YES for P2-001/P2-006
 - Test Executed: YES for Phase 2
 - Next Exact Action: Continue Phase 3 P3-001 in `docs/phases/phase-3/PHASE_3_PLAN.md`.
 - Latest Cleanup: legacy `User`/`UserRole`/`RefreshToken` Prisma scaffold removed; `USER_CREATED` audit action renamed; seed now creates global `Account`.
 - Latest Security Hardening: memory-only JWT access token, rotating opaque refresh cookie, atomic session consume, session family reuse revocation, origin/CORS guard, session management endpoints, auth audit actions.
 - Latest Layering Cleanup: auth DTO and mapper extracted from service/controller; behavior unchanged.
+- Latest Mail Cleanup: register/forgot-password enqueue `mail.send.v1`; worker owns SMTP delivery/retry.
 
 ## Source Basis
 
@@ -36,9 +37,9 @@
 ## Latest Session Log
 
 - Time: 2026-08-04 Asia/Ho_Chi_Minh
-- Runtime Code Changed: YES — split Phase 2 auth DTO/mapper from service/controller.
-- Test Executed: YES — API typecheck/lint/build PASS; auth target tests PASS 3 files / 12 tests.
-- Task Completed: P2-HOTFIX — Auth DTO/mapper layering cleanup.
+- Runtime Code Changed: YES — moved auth SMTP send from API request path into outbox worker.
+- Test Executed: YES — API/worker typecheck/lint/build PASS; auth/outbox target tests PASS 4 files / 13 tests.
+- Task Completed: P2-HOTFIX — Async auth mail via outbox worker.
 - Current Task: Phase 3 P3-001 — Organization/membership model reconciliation.
 - Next Exact Action: Continue Phase 3 P3-001 in `docs/phases/phase-3/PHASE_3_PLAN.md`.
 
