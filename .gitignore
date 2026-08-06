@@ -18,7 +18,10 @@ out/
 **/out/
 
 # Test/cache
-apps/api/tests/
+apps/api/tests/*
+!apps/api/tests/tenancy/
+apps/api/tests/tenancy/*
+!apps/api/tests/tenancy/organization-membership-reconciliation.test.ts
 coverage/
 **/coverage/
 test-results/

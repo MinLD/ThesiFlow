@@ -63,14 +63,14 @@ async function main() {
       },
     });
 
-    const tenant = await tx.tenant.upsert({
+    const organization = await tx.organization.upsert({
       where: { slug: "demo-university" },
       update: { name: "Demo University", status: "active" },
       create: {
         name: "Demo University",
         slug: "demo-university",
         status: "active",
-        plan: "FREE",
+        verifiedAt: new Date(),
       },
     });
 
@@ -85,15 +85,15 @@ async function main() {
     for (const roleSeed of roles) {
       const role = await tx.role.upsert({
         where: {
-          tenantId_key_scope: {
-            tenantId: tenant.id,
+          organizationId_key_scope: {
+            organizationId: organization.id,
             key: roleSeed.key,
             scope: "tenant",
           },
         },
         update: { name: roleSeed.name },
         create: {
-          tenantId: tenant.id,
+          organizationId: organization.id,
           key: roleSeed.key,
           name: roleSeed.name,
           scope: "tenant",
