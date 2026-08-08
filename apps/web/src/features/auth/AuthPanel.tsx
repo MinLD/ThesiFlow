@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useAuth } from "./AuthProvider";
+import { TenantDashboard } from "../tenancy/TenantDashboard";
 
 type Mode = "login" | "register";
 
@@ -45,7 +46,7 @@ export function AuthPanel() {
 
       await auth.login({ email, password });
       setPassword("");
-      setNotice({ type: "success", text: "Đăng nhập thành công. Tenant workspace sẽ được mở ở Phase 3." });
+      setNotice({ type: "success", text: "Đăng nhập thành công." });
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Không thể xử lý yêu cầu. Vui lòng thử lại.");
     } finally {
@@ -92,28 +93,9 @@ export function AuthPanel() {
   }
 
   if (auth.state.status === "authenticated") {
-    const { account } = auth.state;
-    return (
-      <section className="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-xl shadow-slate-950/5 backdrop-blur">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-600">Authenticated</p>
-            <h2 className="mt-3 text-2xl font-bold text-slate-950">Xin chào, {account.fullName}</h2>
-            <p className="mt-2 text-sm text-slate-600">Tài khoản toàn cục đã sẵn sàng. Không gian tổ chức sẽ được chọn sau khi Phase 3 hoàn tất.</p>
-          </div>
-          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700">{account.status}</span>
-        </div>
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-          <p className="font-medium text-slate-950">{account.email}</p>
-          <p className="mt-2">Account scope: Global · Tenant scope: Pending Phase 3</p>
-        </div>
-        {error ? <Alert tone="error" text={error} /> : null}
-        <button className="mt-6 w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50" type="button" onClick={logout}>
-          Đăng xuất
-        </button>
-      </section>
-    );
+    return <TenantDashboard />;
   }
+
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-xl shadow-slate-950/5 backdrop-blur">

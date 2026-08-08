@@ -3,11 +3,21 @@ import cookieParser from "cookie-parser";
 import { errorHandler } from "./common/middleware/errorHandler";
 import { notFoundHandler } from "./common/middleware/notFound";
 import { requestIdMiddleware } from "./common/middleware/requestId";
-import { corsMiddleware, helmetMiddleware, jsonBodyParser, rateLimitMiddleware } from "./common/middleware/security";
+import {
+  corsMiddleware,
+  helmetMiddleware,
+  jsonBodyParser,
+  rateLimitMiddleware,
+} from "./common/middleware/security";
 import { getMeta, getReady } from "./modules/health/health.controller";
 import { authRouter } from "./modules/auth/auth.routes";
 import { healthRouter } from "./modules/health/health.routes";
-import { membershipInvitationRouter, organizationRouter } from "./modules/organizations/organization.routes";
+import {
+  membershipInvitationRouter,
+  organizationRouter,
+} from "./modules/organizations/organization.routes";
+import { tenantContextRouter } from "./modules/tenant-context/tenant-context.routes";
+import { meRouter } from "./modules/me/me.routes";
 
 export function createApp() {
   const app = express();
@@ -22,6 +32,8 @@ export function createApp() {
   app.use("/auth", authRouter);
   app.use("/organizations", organizationRouter);
   app.use("/membership-invitations", membershipInvitationRouter);
+  app.use("/api/v1/tenant-context", tenantContextRouter);
+  app.use("/api/v1/me", meRouter);
   app.use("/health", healthRouter);
   app.get("/ready", getReady);
   app.get("/api/v1/meta", getMeta);

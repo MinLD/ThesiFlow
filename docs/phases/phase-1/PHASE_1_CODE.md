@@ -902,7 +902,7 @@ Runtime implemented. Worker exposes `claimAndPublish`, uses `FOR UPDATE SKIP LOC
 
 - Code Draft: DONE
 - Runtime Applied: YES
-- Test Executed: YES — worker typecheck/build covered by `npm run phase1:check` and `npm run build`
+- Test Executed: YES — original worker typecheck/build plus 2026-08-08 hardening integration test `npm run test --workspace apps/worker` PASS 1 file / 7 tests
 - Next Action: P1-010
 
 ## P1-010 — System Configuration Primitive

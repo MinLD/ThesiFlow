@@ -16,15 +16,15 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 
 - Current Phase: Phase 3 — Organization/Tenant onboarding
 - Current Phase Status: IN_PROGRESS
-- Current Task: P3-004 — Tenant context switch APIs/tests
-- Last Completed Task: P3-003 — Membership invitation/accept lifecycle
-- Next Exact Action: Create/read P3-004 task and implement tenant context switch APIs/tests; do not start P3-005 or Phase 4.
+- Current Task: P3-005 — Minimal organization UI manual browser verification
+- Last Completed Task: P3-004 — Tenant context switch APIs/tests
+- Next Exact Action: Run manual browser verification for P3-005; if PASS, mark Phase 3 DONE and open Phase 4 tracking. Do not implement Phase 4 yet.
 - Official Daily Status Source: `docs/ROADMAP.md`
 - Current Phase Plan: `docs/phases/phase-3/PHASE_3_PLAN.md`
 - Current Phase Code Drafts: `docs/phases/phase-3/PHASE_3_CODE.md`
-- Runtime Code Changed In Latest Session: YES — P3-003 invitation create/accept lifecycle implemented
-- Test Executed In Latest Session: YES — P3-003 review verified `npm run db:validate`; root `lint`; root `typecheck`; full API `test` 19 files / 56 tests PASS; root `build` PASS
-- Latest Review: `docs/training/reviews/2026-08-08_P3-003_REVIEW.md` — PASS_WITH_MINOR_NOTES
+- Runtime Code Changed In Latest Session: YES — P3-005 minimal organization UI plus supporting `GET /api/v1/me/memberships` API implemented
+- Test Executed In Latest Session: YES — `npm install` PASS; root typecheck/lint PASS; API tests PASS 20 files / 67 tests; web tests PASS 2 files / 13 tests; worker tests PASS 1 file / 7 tests; Prisma validate/generate PASS; root build PASS; manual browser verification NOT RUN in CLI environment
+- Latest Report: `docs/training/reports/2026-08-08_P3-005_REPORT.md`
 
 ## Source References
 
@@ -66,6 +66,30 @@ Khi Phase 1 hoàn thành: đặt Phase 1 = DONE, Phase 2 = IN_PROGRESS, tạo `d
 | `docs/PROJECT_STATUS.md` | Reduced pointer to this roadmap for compatibility only; not official status. |
 
 ## Latest Session Log
+
+- Time: 2026-08-08 Asia/Ho_Chi_Minh
+- Executor: Codex CLI
+- Work Performed: Implemented P3-005 minimal organization UI: tenant selector, tenant switch, organization workspace, create/activate form, invitation form, invitation accept page, and supporting membership list API.
+- Runtime Code Changed: YES — web tenancy provider/dashboard added; `GET /api/v1/me/memberships` added as read-only supporting API; canonical switch remains `POST /api/v1/tenant-context/switch`.
+- Files Deleted: NONE.
+- Task Completed: NOT YET — automated verification PASS; manual browser verification still pending in non-browser CLI environment.
+- Current Task: P3-005 — Minimal organization UI manual browser verification.
+- Runtime Applied: YES for P3-005 implementation.
+- Test Executed: YES — `npm install` PASS; `npm run typecheck` PASS; `npm run lint` PASS; `DATABASE_URL=... npm test` PASS 20 files / 67 tests after sandbox retry; `npm test --workspace apps/web` PASS 2 files / 13 tests; `npm test --workspace apps/worker` PASS 1 file / 7 tests; `npm run db:validate` PASS; `npm run prisma:generate --workspace apps/api` PASS; `npm run build` PASS; `git diff --check` PASS.
+- Manual Browser Verification: NOT RUN — no browser automation/GUI available in current CLI session.
+- Next Exact Action: Run manual browser flows A-G for P3-005; if PASS, mark Phase 3 DONE and create/open Phase 4 tracking. Do not implement Phase 4 yet.
+
+- Time: 2026-08-08 Asia/Ho_Chi_Minh
+- Executor: Codex CLI
+- Work Performed: Implemented P3-004 canonical tenant context switch API at `POST /api/v1/tenant-context/switch`; added shared bearer account resolver; resolved context from authenticated account + active membership + active organization; added P3-004 integration tests.
+- Runtime Code Changed: YES — tenant context module added; `app.ts` mounts only canonical `/api/v1/tenant-context`; organization service now reuses shared active account helper.
+- Files Deleted: NONE.
+- Task Completed: P3-004 — Tenant context switch APIs/tests.
+- Current Task: P3-005 — Minimal organization UI.
+- Runtime Applied: YES for P3-004.
+- Test Executed: YES — `DATABASE_URL=... npm run test --workspace apps/api -- tenancy/tenant-context-switch.test.ts tenancy/runtime-reconciliation-boundary.test.ts` PASS 2 files / 11 tests; `npm run db:validate` PASS; `npm run prisma:generate --workspace apps/api` PASS; `npm run typecheck` PASS; `npm run lint` PASS; `DATABASE_URL=... npm test` PASS 20 files / 66 tests; `npm run test --workspace apps/worker` PASS 1 file / 7 tests; `DATABASE_URL=... npm test --workspace apps/api` PASS 20 files / 66 tests; `npm run build` PASS.
+- API Contract Decision: P3-004 ships only `POST /api/v1/tenant-context/switch`; no new unversioned switch route.
+- Next Exact Action: Create/read P3-005 task and implement minimal organization UI; do not start Phase 4.
 
 - Time: 2026-08-04 Asia/Ho_Chi_Minh
 - Executor: Codex CLI
@@ -111,3 +135,15 @@ Khi Phase 1 hoàn thành: đặt Phase 1 = DONE, Phase 2 = IN_PROGRESS, tạo `d
 - Test Executed: YES — P3 tenancy tests PASS 4 files / 14 tests; `npm run db:validate` PASS; root `npm run lint` PASS; root `npm run typecheck` PASS; full API `npm run test` PASS 19 files / 56 tests; root `npm run build` PASS.
 - Review: `docs/training/reviews/2026-08-08_P3-003_REVIEW.md` — PASS_WITH_MINOR_NOTES; no P0/P1; P2 atomic pending guard deferred.
 - Next Exact Action: Create/read P3-004 task and implement tenant context switch APIs/tests; do not start P3-005 or Phase 4.
+
+- Time: 2026-08-08 Asia/Ho_Chi_Minh
+- Executor: Codex CLI
+- Work Performed: Hardened Phase 3 foundation before P3-004: worker Docker SMTP env, outbox stale processing reclaim, worker outbox integration tests, Prisma package alignment, boolean env parsing, README/env cleanup, API contract drift documented.
+- Runtime Code Changed: YES — worker claim query now reclaims stale `processing` rows via `OUTBOX_LOCK_TIMEOUT_MS` while keeping `FOR UPDATE SKIP LOCKED`; Docker worker gets SMTP env fail-fast.
+- Files Deleted: NONE.
+- Task Completed: Phase 3 Foundation Hardening.
+- Current Task: P3-004 — Tenant context switch APIs/tests.
+- Runtime Applied: YES for hardening; YES for P3-003.
+- Test Executed: YES — `npm install` PASS; `npm run db:validate` PASS; `npm run prisma:generate --workspace apps/api` PASS; `npm run test --workspace apps/worker` PASS 1 file / 7 tests; worker typecheck/lint/build PASS; root `npm run typecheck` PASS; root `npm run lint` PASS; `DATABASE_URL=... npm test` PASS 19 files / 57 tests; root `npm run build` PASS after sandbox retry; `docker compose config` PASS.
+- API Contract Decision: P3-004 must follow source-of-truth `/api/v1/...` convention; current unversioned Phase 3 routes are legacy runtime drift and should not be extended as a new convention.
+- Next Exact Action: Implement P3-004 tenant context switch APIs/tests using canonical `/api/v1/tenant-context/switch`; do not start P3-005 or Phase 4.

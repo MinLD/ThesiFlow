@@ -1,7 +1,6 @@
 import crypto from "node:crypto";
-import { verifyAccessToken } from "../../common/auth/token";
+import { requireActiveAccount } from "../../common/auth/requireActiveAccount";
 import { AppError } from "../../common/errors/AppError";
-import { prisma } from "../../database/prisma";
 import { toInvitationDto, toMembershipDto, toOrganizationDto } from "./organization.mapper";
 import {
   acceptPendingMembershipInvitation,
@@ -121,37 +120,8 @@ async function acceptInvitation(authorization: string | undefined, input: Accept
   }
 }
 
-async function requireActiveAccount(authorization: string | undefined): Promise<{ id: string; email: string }> {
-  const accessToken = parseBearerToken(authorization);
-  if (!accessToken) {
-    throw new AppError(401, "AUTH_REQUIRED", "Authentication required");
-  }
-
-  try {
-    const payload = verifyAccessToken(accessToken);
-    const account = await prisma.account.findUnique({
-      where: { id: payload.sub },
-      select: { id: true, email: true, status: true },
-    });
-    if (!account || account.status !== "active") {
-      throw new AppError(401, "AUTH_REQUIRED", "Authentication required");
-    }
-    return { id: account.id, email: account.email };
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-    throw new AppError(401, "AUTH_REQUIRED", "Authentication required");
-  }
-}
-
 function hashInvitationToken(token: string): string {
   return crypto.createHash("sha256").update(token).digest("hex");
-}
-
-function parseBearerToken(authorization: string | undefined): string | null {
-  const [scheme, token] = authorization?.split(" ") ?? [];
-  return scheme === "Bearer" && token ? token : null;
 }
 
 function mapResult(result: OrganizationResult) {

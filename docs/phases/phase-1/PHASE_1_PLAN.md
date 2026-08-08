@@ -205,6 +205,7 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 - Frontend liên quan: none.
 - Worker liên quan: claim loop, publish stub, graceful shutdown.
 - Test cần viết: claim limit, retry/failure status, no aggregate mutation.
+- Hardening evidence 2026-08-08: `apps/worker/tests/outbox-worker.test.ts` covers claim limit, retry, active/stale locks, success/failure and concurrency; PASS 1 file / 7 tests.
 - Điều kiện hoàn thành: Worker test/evidence shows bounded claim and safe retry.
 - Code nằm ở phần nào trong PHASE_1_CODE.md: P1-009.
 - Next Task: P1-010.

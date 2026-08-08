@@ -27,15 +27,17 @@ describe("Phase 3 runtime reconciliation boundary", () => {
     }
   });
 
-  it("exposes only Phase 3 organization, invitation, and accept routes so far", () => {
+  it("exposes Phase 3 organization, invitation, accept, and canonical tenant context routes", () => {
     const appSource = read("src/app.ts");
-    const routeSource = read("src/modules/organizations/organization.routes.ts");
+    const organizationRouteSource = read("src/modules/organizations/organization.routes.ts");
+    const tenantContextRouteSource = read("src/modules/tenant-context/tenant-context.routes.ts");
 
     expect(appSource).toContain('/organizations');
     expect(appSource).toContain('/membership-invitations');
-    expect(routeSource).toContain('/:organizationId/activate');
-    expect(routeSource).toContain('/:organizationId/invitations');
-    expect(routeSource).toContain('/accept');
-    expect(routeSource).not.toContain('switch');
+    expect(appSource).toContain('/api/v1/tenant-context');
+    expect(organizationRouteSource).toContain('/:organizationId/activate');
+    expect(organizationRouteSource).toContain('/:organizationId/invitations');
+    expect(organizationRouteSource).toContain('/accept');
+    expect(tenantContextRouteSource).toContain('/switch');
   });
 });
