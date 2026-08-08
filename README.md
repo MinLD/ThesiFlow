@@ -178,6 +178,15 @@ ACCESS_TOKEN_SECRET=replace-with-at-least-32-characters
 REFRESH_TOKEN_SECRET=replace-with-at-least-32-characters
 ADMIN_EMAIL=admin@thesiflow.local
 ADMIN_PASSWORD=change-me
+SMTP_HOST=smtp.example.com
+SMTP_PORT=465
+SMTP_SECURE=true
+SMTP_USER=change-me
+SMTP_PASS=change-me
+MAIL_FROM="ThesiFlow <no-reply@example.com>"
+OUTBOX_CLAIM_LIMIT=10
+WORKER_POLL_INTERVAL_MS=5000
+OUTBOX_LOCK_TIMEOUT_MS=300000
 ```
 
 Never commit production credentials, tokens, presigned URLs or private document locations.
@@ -188,48 +197,3 @@ Never commit production credentials, tokens, presigned URLs or private document 
 
 **Do Dang Minh Luan** — Full-stack Developer  
 [GitHub profile](https://github.com/MinLD) · [Project repository](https://github.com/MinLD/ThesiFlow)
-
-```bash
-cp .env.example .env
-```
-2. Edit `.env` if needed, especially `POSTGRES_PASSWORD`, `API_PORT`, `WEB_PORT`.
-3. Start:
-```bash
-docker compose up -d --build
-```
-
-## Local dev
-
-```bash
-npm install
-npm run dev
-```
-
-## Checks
-
-```bash
-npm run lint
-npm run typecheck
-npm run test
-npm run build
-```
-
-## DB
-
-- Host: `localhost`
-- Port: `5433`
-- DB: `thesiflow`
-- User: `thesiflow`
-- Password: from `.env`
-
-## Health
-
-- API: `http://localhost:4000/health`
-- Ready: `http://localhost:4000/ready`
-- Meta: `http://localhost:4000/api/v1/meta`
-- Web: `http://localhost:3000`
-
-## Worker
-
-- `apps/worker` polls `outbox_events` and marks claimed events published.
-- Current worker is Phase 1 plumbing only; real notification adapters come later.

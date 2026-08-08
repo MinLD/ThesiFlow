@@ -4,6 +4,16 @@ import nodemailer from "nodemailer";
 import { Pool, type PoolClient } from "pg";
 import { z } from "zod";
 
+const booleanEnv = z.preprocess((value) => {
+  if (value === "true") {
+    return true;
+  }
+  if (value === "false") {
+    return false;
+  }
+  return value;
+}, z.boolean());
+
 for (const envPath of [
   path.resolve(process.cwd(), ".env"),
   ...(process.env.INIT_CWD ? [path.resolve(process.env.INIT_CWD, ".env")] : []),
@@ -16,9 +26,10 @@ const env = z.object({
   DATABASE_URL: z.string().min(1),
   OUTBOX_CLAIM_LIMIT: z.coerce.number().int().positive().default(10),
   WORKER_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(5_000),
+  OUTBOX_LOCK_TIMEOUT_MS: z.coerce.number().int().positive().default(300_000),
   SMTP_HOST: z.string().min(1).optional(),
   SMTP_PORT: z.coerce.number().int().positive().default(465),
-  SMTP_SECURE: z.coerce.boolean().default(true),
+  SMTP_SECURE: booleanEnv.default(true),
   SMTP_USER: z.string().min(1).optional(),
   SMTP_PASS: z.string().min(1).optional(),
   MAIL_FROM: z.string().min(1).optional(),
@@ -42,6 +53,9 @@ export type OutboxRow = {
   payload: unknown;
   attempts: number;
 };
+
+type PublishResult = { sanitizePayload?: boolean } | void;
+type OutboxPublisher = (row: OutboxRow) => Promise<PublishResult>;
 
 function isMailPayload(payload: unknown): payload is MailPayload {
   if (!payload || typeof payload !== "object") {
@@ -71,7 +85,7 @@ function createMailTransport() {
 
 const mailTransport = createMailTransport();
 
-async function claimRows(client: PoolClient, claimLimit: number): Promise<OutboxRow[]> {
+async function claimRows(client: PoolClient, claimLimit: number, lockTimeoutMs: number): Promise<OutboxRow[]> {
   await client.query("BEGIN");
   try {
     const { rows } = await client.query<OutboxRow>(
@@ -81,14 +95,15 @@ async function claimRows(client: PoolClient, claimLimit: number): Promise<Outbox
         WHERE id IN (
           SELECT id
           FROM outbox_events
-          WHERE status IN ('pending', 'failed') AND available_at <= now()
+          WHERE (status IN ('pending', 'failed') AND available_at <= now())
+             OR (status = 'processing' AND locked_at < now() - ($2::text || ' milliseconds')::interval)
           ORDER BY available_at ASC
           FOR UPDATE SKIP LOCKED
           LIMIT $1
         )
         RETURNING id, event_type AS "eventType", aggregate_type AS "aggregateType", aggregate_id AS "aggregateId", payload, attempts
       `,
-      [claimLimit],
+      [claimLimit, lockTimeoutMs],
     );
     await client.query("COMMIT");
     return rows;
@@ -128,9 +143,8 @@ async function markFailed(client: PoolClient, row: OutboxRow, error: unknown): P
   );
 }
 
-async function publishRow(client: PoolClient, row: OutboxRow): Promise<void> {
+async function defaultPublishRow(row: OutboxRow): Promise<PublishResult> {
   if (row.eventType !== "mail.send.v1") {
-    await markPublished(client, row);
     return;
   }
 
@@ -149,18 +163,24 @@ async function publishRow(client: PoolClient, row: OutboxRow): Promise<void> {
     text: row.payload.text,
     html: row.payload.html,
   });
-  await markPublished(client, row, true);
+  return { sanitizePayload: true };
 }
 
-export async function claimAndPublish(targetPool: Pick<Pool, "connect"> = pool, claimLimit = env.OUTBOX_CLAIM_LIMIT): Promise<number> {
+export async function claimAndPublish(
+  targetPool: Pick<Pool, "connect"> = pool,
+  claimLimit = env.OUTBOX_CLAIM_LIMIT,
+  options: { lockTimeoutMs?: number; publish?: OutboxPublisher } = {},
+): Promise<number> {
   const client = await targetPool.connect();
+  const publish = options.publish ?? defaultPublishRow;
 
   try {
-    const rows = await claimRows(client, claimLimit);
+    const rows = await claimRows(client, claimLimit, options.lockTimeoutMs ?? env.OUTBOX_LOCK_TIMEOUT_MS);
 
     for (const row of rows) {
       try {
-        await publishRow(client, row);
+        const result = await publish(row);
+        await markPublished(client, row, result?.sanitizePayload ?? false);
       } catch (error) {
         await markFailed(client, row, error);
         console.error(JSON.stringify({ level: "error", message: "Outbox publish failed", outboxId: row.id, eventType: row.eventType, error: error instanceof Error ? error.message : "Unknown error" }));

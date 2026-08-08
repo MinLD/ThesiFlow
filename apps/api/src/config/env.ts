@@ -2,6 +2,16 @@ import path from "node:path";
 import dotenv from "dotenv";
 import { z } from "zod";
 
+const booleanEnv = z.preprocess((value) => {
+  if (value === "true") {
+    return true;
+  }
+  if (value === "false") {
+    return false;
+  }
+  return value;
+}, z.boolean());
+
 for (const envPath of [
   path.resolve(process.cwd(), ".env"),
   ...(process.env.INIT_CWD ? [path.resolve(process.env.INIT_CWD, ".env")] : []),
@@ -36,12 +46,12 @@ const envSchema = z.object({
   ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(900),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
   REFRESH_TOKEN_COOKIE_NAME: z.string().min(1).default("refresh_token"),
-  COOKIE_SECURE: z.coerce.boolean().default(false),
+  COOKIE_SECURE: booleanEnv.default(false),
   ADMIN_EMAIL: z.string().email(),
   ADMIN_PASSWORD: z.string().min(12),
   SMTP_HOST: z.string().min(1).optional(),
   SMTP_PORT: z.coerce.number().int().positive().default(465),
-  SMTP_SECURE: z.coerce.boolean().default(true),
+  SMTP_SECURE: booleanEnv.default(true),
   SMTP_USER: z.string().min(1).optional(),
   SMTP_PASS: z.string().min(1).optional(),
   MAIL_FROM: z.string().min(1).optional(),

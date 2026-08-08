@@ -23,6 +23,6 @@
     "npm": ">=10.0.0"
   },
   "devDependencies": {
-    "prisma": "^7.9.1"
+    "prisma": "7.9.1"
   }
 }
