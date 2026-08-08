@@ -7,6 +7,7 @@ import { corsMiddleware, helmetMiddleware, jsonBodyParser, rateLimitMiddleware }
 import { getMeta, getReady } from "./modules/health/health.controller";
 import { authRouter } from "./modules/auth/auth.routes";
 import { healthRouter } from "./modules/health/health.routes";
+import { membershipInvitationRouter, organizationRouter } from "./modules/organizations/organization.routes";
 
 export function createApp() {
   const app = express();
@@ -19,6 +20,8 @@ export function createApp() {
   app.use(rateLimitMiddleware);
 
   app.use("/auth", authRouter);
+  app.use("/organizations", organizationRouter);
+  app.use("/membership-invitations", membershipInvitationRouter);
   app.use("/health", healthRouter);
   app.get("/ready", getReady);
   app.get("/api/v1/meta", getMeta);

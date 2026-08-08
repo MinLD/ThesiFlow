@@ -16,14 +16,15 @@ Sau khi đọc: xác định Current Phase, Current Task, task cuối cùng đã
 
 - Current Phase: Phase 3 — Organization/Tenant onboarding
 - Current Phase Status: IN_PROGRESS
-- Current Task: P3-001-B — Runtime/domain reconciliation if required after DB pass
-- Last Completed Task: P3-001-A — Organization/membership database reconciliation
-- Next Exact Action: Developer runs P3-001-B boundary checks and submits `docs/training/reports/2026-08-06_P3-001-B_REPORT.md`; do not start P3-002 or Phase 4 until P3-001-B is reviewed.
+- Current Task: P3-004 — Tenant context switch APIs/tests
+- Last Completed Task: P3-003 — Membership invitation/accept lifecycle
+- Next Exact Action: Create/read P3-004 task and implement tenant context switch APIs/tests; do not start P3-005 or Phase 4.
 - Official Daily Status Source: `docs/ROADMAP.md`
 - Current Phase Plan: `docs/phases/phase-3/PHASE_3_PLAN.md`
 - Current Phase Code Drafts: `docs/phases/phase-3/PHASE_3_CODE.md`
-- Runtime Code Changed In Latest Session: NO — P3-001-B boundary test/docs only after P3-001-A commit `c54c2b9`
-- Test Executed In Latest Session: YES — P3-001-B boundary test PASS 1 file / 2 tests; API lint PASS
+- Runtime Code Changed In Latest Session: YES — P3-003 invitation create/accept lifecycle implemented
+- Test Executed In Latest Session: YES — P3-003 review verified `npm run db:validate`; root `lint`; root `typecheck`; full API `test` 19 files / 56 tests PASS; root `build` PASS
+- Latest Review: `docs/training/reviews/2026-08-08_P3-003_REVIEW.md` — PASS_WITH_MINOR_NOTES
 
 ## Source References
 
@@ -79,11 +80,34 @@ Khi Phase 1 hoàn thành: đặt Phase 1 = DONE, Phase 2 = IN_PROGRESS, tạo `d
 
 - Time: 2026-08-06 Asia/Ho_Chi_Minh
 - Executor: Codex CLI
-- Work Performed: Committed P3-001-A database reconciliation as `c54c2b9`; prepared P3-001-B runtime/domain boundary assessment task and test.
-- Runtime Code Changed: NO for P3-001-B — only `.gitignore`, test and documentation changed after the P3-001-A commit.
+- Work Performed: Reviewed P3-002 implementation, deferred non-blocking P2 hardening notes, created P3-003 membership invitation/accept lifecycle test/task/spec.
+- Runtime Code Changed: NO — tests/docs only by AI.
 - Files Deleted: NONE.
-- Task Completed: P3-001-A — Organization/membership database reconciliation.
-- Current Task: P3-001-B — Runtime/domain reconciliation if required after DB pass.
+- Task Completed: P3-002 — Organization create/activate APIs.
+- Historical Current Task At That Time: P3-003 — Membership invitation/accept lifecycle.
 - Runtime Applied: YES for P3-001-A.
-- Test Executed: YES — `npm run test --workspace apps/api -- tenancy/runtime-reconciliation-boundary.test.ts` PASS 1 file / 2 tests; `npm run lint --workspace apps/api` PASS.
-- Next Exact Action: Developer runs P3-001-B boundary checks and submits `docs/training/reports/2026-08-06_P3-001-B_REPORT.md`; do not start P3-002 or Phase 4 until P3-001-B is reviewed.
+- Historical Test Executed: YES — P3-002 full review checks PASS; P3-003 pre-implementation target check failed as expected.
+- Historical Next Action At That Time: Developer implements P3-003 membership invitation/accept lifecycle to satisfy `apps/api/tests/tenancy/membership-invitation-lifecycle.test.ts`; do not start P3-004 or Phase 4.
+
+- Time: 2026-08-06 Asia/Ho_Chi_Minh
+- Executor: Codex CLI
+- Work Performed: Implemented P3-002 minimal organization create/activate backend API.
+- Runtime Code Changed: YES — added organization routes/controller/service/repository/schemas/mapper; mounted `/organizations`; updated boundary test for P3-002 route scope; fixed Prisma schema drift by restoring `MembershipInvitation` model and regenerating client.
+- Files Deleted: NONE.
+- Task Completed: P3-002 — Organization create/activate APIs.
+- Historical Current Task At That Time: P3-003 — Membership invitation/accept lifecycle.
+- Runtime Applied: YES for P3-002.
+- Test Executed: YES — P3 tenancy tests PASS 3 files / 10 tests; `npm run db:validate` PASS; root `npm run lint` PASS; root `npm run typecheck` PASS; full API `npm run test` PASS 18 files / 52 tests; root `npm run build` PASS.
+- Historical Next Action At That Time: Create/read P3-003 task and implement membership invitation/accept lifecycle; do not start P3-004 or Phase 4.
+
+- Time: 2026-08-08 Asia/Ho_Chi_Minh
+- Executor: Codex CLI
+- Work Performed: Implemented P3-003 membership invitation create/accept lifecycle.
+- Runtime Code Changed: YES — added `POST /organizations/:organizationId/invitations`, `POST /membership-invitations/accept`, token hashing, recipient matching, accepted invitation transition, active membership creation, safe invitation DTOs and P3-003 boundary test update.
+- Files Deleted: NONE.
+- Task Completed: P3-003 — Membership invitation/accept lifecycle.
+- Current Task: P3-004 — Tenant context switch APIs/tests.
+- Runtime Applied: YES for P3-003.
+- Test Executed: YES — P3 tenancy tests PASS 4 files / 14 tests; `npm run db:validate` PASS; root `npm run lint` PASS; root `npm run typecheck` PASS; full API `npm run test` PASS 19 files / 56 tests; root `npm run build` PASS.
+- Review: `docs/training/reviews/2026-08-08_P3-003_REVIEW.md` — PASS_WITH_MINOR_NOTES; no P0/P1; P2 atomic pending guard deferred.
+- Next Exact Action: Create/read P3-004 task and implement tenant context switch APIs/tests; do not start P3-005 or Phase 4.

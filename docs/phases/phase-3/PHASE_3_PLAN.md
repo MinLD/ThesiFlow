@@ -8,11 +8,12 @@
 
 - Current Phase: Phase 3 — Organization/Tenant onboarding
 - Phase Status: IN_PROGRESS
-- Current Task: P3-001-B — Runtime/domain reconciliation if required after DB pass
-- Last Completed Task: P3-001-A — Organization/membership database reconciliation
-- Runtime Applied: YES for P3-001-A
-- Test Executed: YES — P3-001-B boundary test PASS; API lint PASS
-- Next Exact Action: Developer runs P3-001-B boundary checks and submits report; do not start P3-002.
+- Current Task: P3-004 — Tenant context switch APIs/tests
+- Last Completed Task: P3-003 — Membership invitation/accept lifecycle
+- Runtime Applied: YES for P3-003
+- Test Executed: YES — P3-003 review target/P3/full checks PASS
+- Latest Review: `docs/training/reviews/2026-08-08_P3-003_REVIEW.md` — PASS_WITH_MINOR_NOTES
+- Next Exact Action: Create/read P3-004 task and implement tenant context switch APIs/tests; do not start P3-005.
 - Latest Pre-Phase-3 Cleanup: legacy `User`/`UserRole`/`RefreshToken` scaffold removed from Prisma runtime; `USER_CREATED` audit action renamed; Phase 3 now starts from `Account` + remaining `Tenant`/`Role` scaffold.
 - Latest Phase 2 Closure: hybrid auth is hardened; auth mail is async through outbox worker; auth/outbox target tests passed 4 files / 13 tests.
 
@@ -25,20 +26,20 @@
 | Task | Nội dung | Code Draft | Runtime | Test | Trạng thái |
 |---|---|---|---|---|---|
 | P3-001-A | Database reconciliation cho Organization/Membership/Invitation | APPLIED | YES | YES — PASS | DONE |
-| P3-001-B | Runtime/domain boundary assessment sau DB pass | DRAFTED | NO | YES — PASS | TODO |
-| P3-002 | Organization create/activate APIs | NOT_STARTED | NO | NO | NOT_STARTED |
-| P3-003 | Membership invitation/accept lifecycle | NOT_STARTED | NO | NO | NOT_STARTED |
-| P3-004 | Tenant context switch APIs/tests | NOT_STARTED | NO | NO | NOT_STARTED |
+| P3-001-B | Runtime/domain boundary assessment sau DB pass | REVIEWED | NO | YES — PASS | DONE |
+| P3-002 | Organization create/activate APIs | APPLIED | YES | YES — PASS | DONE |
+| P3-003 | Membership invitation/accept lifecycle | APPLIED | YES | YES — PASS | DONE |
+| P3-004 | Tenant context switch APIs/tests | NOT_STARTED | NO | NO | IN_PROGRESS |
 | P3-005 | Minimal organization UI | NOT_STARTED | NO | NO | NOT_STARTED |
 
 ## Latest Session Log
 
 - Time: 2026-08-06 Asia/Ho_Chi_Minh
-- Runtime Code Changed: NO for P3-001-B — boundary test and docs only after P3-001-A commit `c54c2b9`.
-- Test Executed: YES — `npm run test --workspace apps/api -- tenancy/runtime-reconciliation-boundary.test.ts` PASS 1 file / 2 tests; `npm run lint --workspace apps/api` PASS.
-- Task Completed: P3-001-A — Organization/membership database reconciliation.
-- Current Task: P3-001-B — Runtime/domain boundary assessment.
-- Next Exact Action: Developer runs P3-001-B boundary checks and submits report; do not start P3-002.
+- Runtime Code Changed: YES — P3-003 membership invitation lifecycle implemented.
+- Test Executed: YES — P3 tenancy tests PASS 4 files / 14 tests; full API test PASS 19 files / 56 tests; root lint/typecheck/build PASS.
+- Task Completed: P3-003 — Membership invitation/accept lifecycle.
+- Current Task: P3-004 — Tenant context switch APIs/tests.
+- Next Exact Action: Create/read P3-004 task and implement tenant context switch APIs/tests; do not start P3-005.
 
 ## P3-001 — Organization/membership model reconciliation
 
@@ -68,14 +69,38 @@
 - Test status: PASS — target tenancy test 1 file / 4 tests.
 - Typecheck status: PASS.
 - Report: `docs/training/reports/2026-08-06_P3-001-A_REPORT.md`.
-- Next Exact Action: Developer runs P3-001-B boundary checks and submits report; do not start P3-002.
+- Next Exact Action: Move to P3-002 organization create/activate API.
 
 ## P3-001-B — Runtime/domain reconciliation assessment
 
-- Status: TODO
+- Status: DONE
 - Daily task: `docs/training/tasks/2026-08-06_P3-001-B.md`
 - Test file: `apps/api/tests/tenancy/runtime-reconciliation-boundary.test.ts`
 - Runtime Applied: NO — assessment/boundary test only.
 - Database mode: DATABASE_SPEC_ONLY — no new DB change.
 - Test status: PASS — target boundary test 1 file / 2 tests.
-- Next Exact Action: Developer submits P3-001-B report; reviewer decides whether P3-002 can start.
+- Next Exact Action: Move to P3-002 organization create/activate API.
+
+## P3-002 — Organization create/activate APIs
+
+- Status: DONE
+- Daily task: `docs/training/tasks/2026-08-06_P3-002.md`
+- Test file: `apps/api/tests/tenancy/organization-create-activate.test.ts`
+- Runtime Applied: YES — organization module implemented and mounted.
+- Database mode: DATABASE_SPEC_ONLY — no new schema or migration expected.
+- Test status: PASS — target tenancy test 1 file / 4 tests.
+- Report: `docs/training/reports/2026-08-06_P3-002_REPORT.md`.
+- Next Exact Action: Create/read P3-003 task and implement membership invitation/accept lifecycle; do not start P3-004.
+
+## P3-003 — Membership invitation/accept lifecycle
+
+- Status: DONE
+- Daily task: `docs/training/tasks/2026-08-06_P3-003.md`
+- Database spec: `docs/training/database-specs/2026-08-06_P3-003_DATABASE.md`
+- Test file: `apps/api/tests/tenancy/membership-invitation-lifecycle.test.ts`
+- Runtime Applied: YES — invitation create/accept routes implemented.
+- Database mode: DATABASE_SPEC_ONLY — no migration expected.
+- Test status: PASS — target invitation lifecycle test 1 file / 4 tests.
+- Report: `docs/training/reports/2026-08-06_P3-003_REPORT.md`.
+- Review: `docs/training/reviews/2026-08-08_P3-003_REVIEW.md` — PASS_WITH_MINOR_NOTES.
+- Next Exact Action: Create/read P3-004 task and implement tenant context switch APIs/tests; do not start P3-005.

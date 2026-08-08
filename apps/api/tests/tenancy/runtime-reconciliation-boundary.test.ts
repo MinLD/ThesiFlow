@@ -27,10 +27,15 @@ describe("Phase 3 runtime reconciliation boundary", () => {
     }
   });
 
-  it("does not expose organization API routes before P3-002", () => {
+  it("exposes only Phase 3 organization, invitation, and accept routes so far", () => {
     const appSource = read("src/app.ts");
+    const routeSource = read("src/modules/organizations/organization.routes.ts");
 
-    expect(appSource).not.toContain('/organizations');
-    expect(appSource).not.toContain('/organization');
+    expect(appSource).toContain('/organizations');
+    expect(appSource).toContain('/membership-invitations');
+    expect(routeSource).toContain('/:organizationId/activate');
+    expect(routeSource).toContain('/:organizationId/invitations');
+    expect(routeSource).toContain('/accept');
+    expect(routeSource).not.toContain('switch');
   });
 });
